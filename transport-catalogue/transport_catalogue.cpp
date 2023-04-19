@@ -19,8 +19,8 @@ void TransportCatalogue::AddDistance(std::string_view start_stop, std::string_vi
     auto distances = DistanceInfoInVector(info);
     if(!distances.empty()){
         for (const auto& dist_info : distances) {
-            Stop* destination = stopname_to_stop.at(start_stop);
-            Stop* start = stopname_to_stop.at(dist_info.second);
+            Stop* destination = stopname_to_stop.at(dist_info.second);
+            Stop* start = stopname_to_stop.at(start_stop);
             std::pair<Stop*, Stop*> data{ start, destination };
             stop_to_distance[data] = dist_info.first;
         }
