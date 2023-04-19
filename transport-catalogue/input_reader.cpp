@@ -1,9 +1,6 @@
 #include <iostream>
 
 #include "input_reader.h"
-#include "log_duration.h"
-
-
 
 using namespace std::literals;
 
@@ -20,7 +17,7 @@ int ReadLineWithNumber() {
     return result;
 }
 
-Query ParseQuery(std::string query) {
+Query ParseQuery(std::string_view query) {
     Query result;
     if (query[0] == 'S') {
         result.type = QueryType::Stop;
@@ -51,19 +48,53 @@ std::vector<std::string_view> SplitIntoWords(std::string_view str) {
     return result;
 }
 
-std::vector<std::pair<long unsigned int, std::string>> ParseStopDistances(std::string_view info_) {
+std::pair<Bus, std::vector<std::string_view>> ParseBusInfo(std::string_view data) {
+    Bus result;
+    auto start_of_busname = data.find_first_not_of(" ");
+    auto end_of_busname = data.find(':');
+    result.name = data.substr(start_of_busname, end_of_busname);
+    auto stops = SplitIntoWords(data.substr(end_of_busname + 1));
+    return { result, stops };
+}
+
+Stop ParseStopInfo(std::string& data) {
+    Stop result;
+    auto start_of_stopname = data.find_first_not_of(" ");
+    auto end_of_stopname = data.find(':');
+    result.name = data.substr(start_of_stopname, end_of_stopname - start_of_stopname);
+    auto start_of_latitude = data.find_first_of("-0123456789", end_of_stopname);
+    auto end_of_latitude = data.find_first_of(",", end_of_stopname);
+    std::string latitude = data.substr(start_of_latitude, end_of_latitude - start_of_latitude);
+    result.lat_ = std::stod(move(latitude));
+    auto end_of_longitude = data.find_first_not_of("-0123456789.", end_of_latitude + 2);
+    std::string longitude = data.substr(end_of_latitude + 2, end_of_longitude - end_of_latitude - 2);
+    result.long_ = std::stod(move(longitude));
+    return result;
+}
+
+std::vector<std::pair<long unsigned int, std::string>> DistanceInfoInVector(std::string_view info) {
+    info.remove_prefix(info.find(',') + 1);
+    if (info.find(',') != std::string::npos) {
+        info.remove_prefix(info.find(',') + 1);
+        std::vector<std::pair<long unsigned int, std::string>> distances = ParseStopDistances(info);
+        return distances;
+    }
+    return {};
+}
+
+std::vector<std::pair<long unsigned int, std::string>> ParseStopDistances(std::string_view info) {
     std::vector<std::pair<long unsigned int, std::string>>  result;
-    while (!info_.empty()) {
-        if (info_[0] == ',') info_.remove_prefix(1);
-        info_.remove_prefix(std::min(info_.size(), info_.find_first_not_of(" ")));
-        int64_t stop = info_.find('m');
-        long unsigned int dist_ = std::stol(static_cast<std::string>(info_.substr(0, stop)));
-        info_.remove_prefix(info_.find("to", stop));
-        info_.remove_prefix(info_.find_first_of(" ")+1);
-        std::string stop_ = static_cast<std::string>(info_.substr(0, info_.find(',')));
-        result.push_back({ dist_, stop_ });
-        auto next = info_.find(',');
-        info_.remove_prefix((std::min(info_.size(), next)));
+    while (!info.empty()) {
+        if (info[0] == ',') info.remove_prefix(1);
+        info.remove_prefix(std::min(info.size(), info.find_first_not_of(" ")));
+        int64_t m_point = info.find('m');
+        long unsigned int dist = std::stol(static_cast<std::string>(info.substr(0, m_point)));
+        info.remove_prefix(info.find("to", m_point));
+        info.remove_prefix(info.find_first_of(" ")+1);
+        std::string stop = static_cast<std::string>(info.substr(0, info.find(',')));
+        result.push_back({ dist, stop });
+        auto next = info.find(',');
+        info.remove_prefix((std::min(info.size(), next)));
     }
     return result;
 }
@@ -78,27 +109,26 @@ void CreateBase(TransportCatalogue& base) {
         }
     
     
-        for (Query& query_ : data) {
-            if (query_.type == QueryType::Stop) {
-                base.AddStop(query_.data);
+        for (Query& query : data) {
+            if (query.type == QueryType::Stop) {
+                base.AddStop(query.data);
             }
         }
    
-        for (Query& query_ : data) {
-            if (query_.type == QueryType::Stop) {
-                auto start_of_stopname = query_.data.find_first_not_of(" ");
-                auto end_of_stopname = query_.data.find(':');
-                auto name = query_.data.substr(start_of_stopname, end_of_stopname - start_of_stopname);
-                base.AddDistance(base.FindStop(name), query_.data);
+        for (Query& query : data) {
+            if (query.type == QueryType::Stop) {
+                auto start_of_stopname = query.data.find_first_not_of(" ");
+                auto end_of_stopname = query.data.find(':');
+                auto name = query.data.substr(start_of_stopname, end_of_stopname - start_of_stopname);
+                base.AddDistance(name, query.data);
             }
         }
     
-        for (Query& query_ : data) {
-            if (query_.type == QueryType::Bus) {
-                base.AddBus(move(query_.data));
+        for (Query& query : data) {
+            if (query.type == QueryType::Bus) {
+                base.AddBus(move(query.data));
             }
         }
     
     
 }
-

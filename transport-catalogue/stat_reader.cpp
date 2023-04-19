@@ -23,13 +23,13 @@ void AskBase(TransportCatalogue& base) {
             if (base.FindStop(name) == nullptr) {
                 std::cout << query << ": not found"s << std::endl;
             }
-            else if (base.GetStopInfo(name).empty()) {
+            else if (base.GetStopInfo(name) == nullptr) {
                 std::cout << query << ": no buses" << std::endl;
             }
             else {
                 std::cout << query << ": buses"s;
-                for (const std::string& bus_ : base.GetStopInfo(name)) {
-                    std::cout << " "s << bus_;
+                for (const std::string& bus : *base.GetStopInfo(name)) {
+                    std::cout << " "s << bus;
                 }
                 std::cout << std::endl;
             }
