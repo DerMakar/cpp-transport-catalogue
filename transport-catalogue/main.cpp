@@ -9,11 +9,11 @@
 using namespace std::literals;
 
 int main() {
-	TransportCatalogue base;
+	bus_stop_processing::TransportCatalogue base;
 	
-		CreateBase(base);
+	transport_base_processing::CreateBase(base);
 	
-		AskBase(base);
+	transport_base_processing::AskBase(base);
 	
 	return 0;
 }

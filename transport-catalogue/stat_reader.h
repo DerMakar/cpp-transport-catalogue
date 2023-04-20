@@ -1,6 +1,7 @@
 #pragma once
 #include "input_reader.h"
 
-
-void AskBase(TransportCatalogue& base);
+namespace transport_base_processing {
+	void AskBase(bus_stop_processing::TransportCatalogue& base);
+}
 
