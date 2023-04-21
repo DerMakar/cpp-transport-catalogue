@@ -2,6 +2,6 @@
 #include "input_reader.h"
 
 namespace transport_base_processing {
-	void AskBase(bus_stop_processing::TransportCatalogue& base);
+	void AskBase(transport_base_processing::TransportCatalogue& base);
 }
 

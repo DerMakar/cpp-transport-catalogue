@@ -7,6 +7,8 @@
 #include "transport_catalogue.h"
 
 namespace transport_base_processing {
+	using StopDistancesInfo = std::vector<std::pair<long unsigned int, std::string>>;
+	
 	enum class QueryType {
 		Stop,
 		Bus,
@@ -22,9 +24,8 @@ namespace transport_base_processing {
 	int ReadLineWithNumber();
 	Query ParseQuery(std::string_view query);
 	std::vector<std::string_view> SplitIntoWords(std::string_view str);
-	std::pair<bus_stop_processing::Bus, std::vector<std::string_view>> ParseBusInfo(std::string_view data);
-	bus_stop_processing::Stop ParseStopInfo(std::string& data);
-	std::vector<std::pair<long unsigned int, std::string>> DistanceInfoInVector(std::string_view info);
-	std::vector<std::pair<long unsigned int, std::string>> ParseStopDistances(std::string_view info);
-	void CreateBase(bus_stop_processing::TransportCatalogue&);
+	Bus ParseBusInfo(TransportCatalogue& base, std::string_view data);
+	StopDistancesInfo DistanceInfoInVector(std::string_view info);
+	StopDistancesInfo ParseStopDistances(std::string_view info);
+	void CreateBase(TransportCatalogue& base);
 }

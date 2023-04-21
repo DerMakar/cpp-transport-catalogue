@@ -5,18 +5,18 @@
 namespace transport_base_processing {
     using namespace std::literals;
 
-    void AskBase(bus_stop_processing::TransportCatalogue& base) {
-        int num_of_queries = transport_base_processing::ReadLineWithNumber();
+    void AskBase(TransportCatalogue& base) {
+        int num_of_queries = ReadLineWithNumber();
         for (int i = 0; i != num_of_queries; ++i) {
-            std::string query = transport_base_processing::ReadLine();
+            std::string query = ReadLine();
             auto pos = query.find(' ');
             std::string name = query.substr(pos + 1);
             if (query[0] == 'B') {
-                if (base.FindBus(move(name)) == nullptr) {
+                if (!base.GetBusInfo(name)) {
                     std::cout << query << ": not found"s << std::endl;
                 }
                 else {
-                    std::cout << query << ": "s << base.GetBusInfo(name) << std::endl;
+                    std::cout << query << ": "s << base.GetBusInfo(name).value() << std::endl;
                 }
             }
             else if (query[0] == 'S') {

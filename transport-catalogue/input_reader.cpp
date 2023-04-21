@@ -4,11 +4,7 @@
 
 namespace transport_base_processing {
     using namespace std::literals;
-    using bus_stop_processing::Bus;
-    using bus_stop_processing::Stop;
-    using bus_stop_processing::TransportCatalogue;
-
-
+    
     std::string ReadLine() {
         std::string s;
         getline(std::cin, s);
@@ -53,13 +49,28 @@ namespace transport_base_processing {
         return result;
     }
 
-    std::pair<Bus, std::vector<std::string_view>> ParseBusInfo(std::string_view data) {
+    Bus ParseBusInfo(TransportCatalogue& base, std::string_view data) {
         Bus result;
         auto start_of_busname = data.find_first_not_of(" ");
         auto end_of_busname = data.find(':');
         result.name = data.substr(start_of_busname, end_of_busname);
         auto stops = SplitIntoWords(data.substr(end_of_busname + 1));
-        return { result, stops };
+        if (data.find('-') != std::string::npos) result.is_circle = true;
+        for (auto& stop : stops) {
+            if (base.GetStopsMap().count(stop) != 0) {
+                result.route.push_back(base.GetStopsMap().at(stop));
+
+            }
+            else {
+                throw std::invalid_argument("You're trying add unvalid Stop to route"s);
+            }
+        }
+        if (result.is_circle) {
+            std::vector<Stop*> tmp = result.route;
+            result.route.resize(result.route.size() * 2 - 1);
+            std::copy_backward(tmp.rbegin() + 1, tmp.rend(), result.route.end());
+        }
+        return result;
     }
 
     Stop ParseStopInfo(std::string& data) {
@@ -77,18 +88,17 @@ namespace transport_base_processing {
         return result;
     }
 
-    std::vector<std::pair<long unsigned int, std::string>> DistanceInfoInVector(std::string_view info) {
-        info.remove_prefix(info.find(',') + 1);
-        if (info.find(',') != std::string::npos) {
-            info.remove_prefix(info.find(',') + 1);
-            std::vector<std::pair<long unsigned int, std::string>> distances = ParseStopDistances(info);
-            return distances;
+    StopDistancesInfo DistanceInfoInVector(std::string_view info) {
+        if(info.find(',', info.find(',') + 1) == std::string::npos){
+            return {};
         }
-        return {};
-    }
-
-    std::vector<std::pair<long unsigned int, std::string>> ParseStopDistances(std::string_view info) {
-        std::vector<std::pair<long unsigned int, std::string>>  result;
+        StopDistancesInfo  result;
+        result.reserve(std::count(info.begin(), info.end(), ','));
+        auto start_of_stopname = info.find_first_not_of(" ");
+        auto end_of_stopname = info.find(':');
+        std::string name = static_cast<std::string> (info.substr(start_of_stopname, end_of_stopname - start_of_stopname));
+        result.push_back({ 0, name });
+        info.remove_prefix(info.find(',', info.find(',') + 1) + 1);
         while (!info.empty()) {
             if (info[0] == ',') info.remove_prefix(1);
             info.remove_prefix(std::min(info.size(), info.find_first_not_of(" ")));
@@ -116,22 +126,19 @@ namespace transport_base_processing {
 
         for (Query& query : data) {
             if (query.type == QueryType::Stop) {
-                base.AddStop(query.data);
+                base.AddStop(std::move(ParseStopInfo(query.data)));
             }
         }
 
         for (Query& query : data) {
             if (query.type == QueryType::Stop) {
-                auto start_of_stopname = query.data.find_first_not_of(" ");
-                auto end_of_stopname = query.data.find(':');
-                auto name = query.data.substr(start_of_stopname, end_of_stopname - start_of_stopname);
-                base.AddDistance(name, query.data);
+                base.AddDistance(move(DistanceInfoInVector(query.data)));
             }
         }
 
         for (Query& query : data) {
             if (query.type == QueryType::Bus) {
-                base.AddBus(move(query.data));
+                base.AddBus(std::move(ParseBusInfo(base, query.data)));
             }
         }
 

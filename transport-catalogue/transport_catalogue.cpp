@@ -9,44 +9,28 @@
 
 using namespace std::literals;
 
-namespace bus_stop_processing {
+namespace transport_base_processing {
 
-    void TransportCatalogue::AddStop(std::string data) {
-        stops.push_back(std::move(transport_base_processing::ParseStopInfo(data)));
+    void TransportCatalogue::AddStop(Stop stop) {
+        stops.push_back(std::move(stop));
         stopname_to_stop[std::string_view(stops.back().name)] = &stops.back();
 
     }
 
-    void TransportCatalogue::AddDistance(std::string_view start_stop, std::string_view info) {
-        auto distances = transport_base_processing::DistanceInfoInVector(info);
-        if (!distances.empty()) {
-            for (const auto& dist_info : distances) {
-                Stop* destination = stopname_to_stop.at(dist_info.second);
-                Stop* start = stopname_to_stop.at(start_stop);
+    void TransportCatalogue::AddDistance(const StopDistancesInfo& info) {
+        if (!info.empty()) {
+            Stop* start = stopname_to_stop.at(info[0].second);
+            for (size_t i = 1; i < info.size(); ++i) {
+                Stop* destination = stopname_to_stop.at(info[i].second);
                 std::pair<Stop*, Stop*> data{ start, destination };
-                stop_to_distance[data] = dist_info.first;
+                stop_to_distance[data] = info[i].first;
             }
         }
     }
 
 
-    void TransportCatalogue::AddBus(std::string_view data) {
-        auto bus_info = transport_base_processing::ParseBusInfo(data);
-        for (auto& stop : bus_info.second) {
-            if (stopname_to_stop.count(stop) != 0) {
-                bus_info.first.route.push_back(stopname_to_stop.at(stop));
-
-            }
-            else {
-                throw std::invalid_argument("You're trying add unvalid Stop to route"s);
-            }
-        }
-        if (data.find('-') != std::string::npos) {
-            std::vector<Stop*> tmp = bus_info.first.route;
-            bus_info.first.route.resize(bus_info.first.route.size() * 2 - 1);
-            std::copy_backward(tmp.rbegin() + 1, tmp.rend(), bus_info.first.route.end());
-        }
-        buses.push_back(bus_info.first);
+    void TransportCatalogue::AddBus(Bus bus) {
+        buses.push_back(std::move(bus));
         busname_to_bus[std::string_view(buses.back().name)] = &buses.back();
         FullStopByBuses(buses.back());
     }
@@ -79,6 +63,10 @@ namespace bus_stop_processing {
         return stops;
     }
 
+    const std::unordered_map<std::string_view, Stop*>& TransportCatalogue::GetStopsMap() {
+        return stopname_to_stop;
+    }
+
     const TransportCatalogue::DistanceInfo& TransportCatalogue::GetDistanceCollection() const {
         return stops_to_distance;
     }
@@ -91,25 +79,28 @@ namespace bus_stop_processing {
             if (stops_to_distance.count({ start_of_dist, end_of_dist }) != 0) {
                 continue;
             }
-            stops_to_distance[{ start_of_dist, end_of_dist }] = ComputeDistance({ start_of_dist->lat_ , start_of_dist->long_ }, { end_of_dist->lat_ ,end_of_dist->long_ });
+            stops_to_distance[{ start_of_dist, end_of_dist }] = calculator::ComputeDistance({ start_of_dist->lat_ , start_of_dist->long_ }, { end_of_dist->lat_ ,end_of_dist->long_ });
             if (stops_to_distance.count({ end_of_dist, start_of_dist }) != 0) {
                 continue;
             }
-            stops_to_distance[{ end_of_dist, start_of_dist}] = ComputeDistance({ end_of_dist->lat_ ,end_of_dist->long_ }, { start_of_dist->lat_ , start_of_dist->long_ });
+            stops_to_distance[{ end_of_dist, start_of_dist}] = calculator::ComputeDistance({ end_of_dist->lat_ ,end_of_dist->long_ }, { start_of_dist->lat_ , start_of_dist->long_ });
         }
 
     }
 
-    BusInfo TransportCatalogue::GetBusInfo(std::string_view bus) const {
+    std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view busname) const {
+        if (busname_to_bus.count(busname) == 0) {
+            return {};
+        }
         BusInfo bus_info{ 0, 1, 0, 0.0 };
-        bus_info.stops_on_route = busname_to_bus.at(bus)->route.size();
+        bus_info.stops_on_route = busname_to_bus.at(busname)->route.size();
         std::vector<Stop*> tmp;
-        tmp.reserve(busname_to_bus.at(bus)->route.size());
-        Stop* left = busname_to_bus.at(bus)->route[0];
+        tmp.reserve(busname_to_bus.at(busname)->route.size());
+        Stop* left = busname_to_bus.at(busname)->route[0];
         tmp.push_back(left);
-        for (int i = 1; i < busname_to_bus.at(bus)->route.size(); ++i) {
-            Stop* right = busname_to_bus.at(bus)->route[i];
-            bus_info.curvature += ComputeDistance({ left->lat_, left->long_ }, { right->lat_, right->long_ });
+        for (int i = 1; i < busname_to_bus.at(busname)->route.size(); ++i) {
+            Stop* right = busname_to_bus.at(busname)->route[i];
+            bus_info.curvature += calculator::ComputeDistance({ left->lat_, left->long_ }, { right->lat_, right->long_ });
             if (stop_to_distance.count({ left, right }) != 0) {
                 bus_info.route_lenght += stop_to_distance.at({ left, right });
             }
