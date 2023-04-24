@@ -81,18 +81,18 @@ namespace transport_base_processing {
         auto start_of_latitude = data.find_first_of("-0123456789", end_of_stopname);
         auto end_of_latitude = data.find_first_of(",", end_of_stopname);
         std::string latitude = data.substr(start_of_latitude, end_of_latitude - start_of_latitude);
-        result.lat_ = std::stod(move(latitude));
+        result.coordinates.lat = std::stod(move(latitude));
         auto end_of_longitude = data.find_first_not_of("-0123456789.", end_of_latitude + 2);
         std::string longitude = data.substr(end_of_latitude + 2, end_of_longitude - end_of_latitude - 2);
-        result.long_ = std::stod(move(longitude));
+        result.coordinates.lng = std::stod(move(longitude));
         return result;
     }
 
-    StopDistancesInfo DistanceInfoInVector(std::string_view info) {
+    TransportCatalogue::StopDistancesInfo DistanceInfoInVector(std::string_view info) {
         if(info.find(',', info.find(',') + 1) == std::string::npos){
             return {};
         }
-        StopDistancesInfo  result;
+        TransportCatalogue::StopDistancesInfo  result;
         result.reserve(std::count(info.begin(), info.end(), ','));
         auto start_of_stopname = info.find_first_not_of(" ");
         auto end_of_stopname = info.find(':');

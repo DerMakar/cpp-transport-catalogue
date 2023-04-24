@@ -9,10 +9,14 @@
 
 namespace transport_base_processing {
 
+	struct Coordinates {
+		double lat = 0; // широта
+		double lng = 0; // долгота
+	};
+	
 	struct Stop {
 		std::string name;
-		double lat_ = 0; // широта
-		double long_ = 0; // долгота
+		Coordinates coordinates;
 	};
 
 	struct Bus {
@@ -44,9 +48,11 @@ namespace transport_base_processing {
 	
 
 	class TransportCatalogue {
+		
+	public:
 		using DistanceInfo = std::unordered_map<std::pair<Stop*, Stop*>, double, detail::StopToDistanceHasher>;
 		using StopDistancesInfo = std::vector<std::pair<long unsigned int, std::string>>;
-	public:
+		
 		void AddStop(Stop stop);
 		void AddDistance(const StopDistancesInfo& info);
 		void AddBus(Bus bus);
