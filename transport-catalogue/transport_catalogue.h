@@ -2,37 +2,13 @@
 
 #include <unordered_map>
 #include <deque>
-#include <vector>
-#include <string>
 #include <set>
 #include <optional>
 
+#include "domain.h"
+
 namespace transport_base_processing {
-
-	struct Coordinates {
-		double lat = 0; // широта
-		double lng = 0; // долгота
-	};
-	
-	struct Stop {
-		std::string name;
-		Coordinates coordinates;
-	};
-
-	struct Bus {
-		std::string name;
-		std::vector<Stop*> route;
-		bool is_circle = false;
-	};
-
-	struct BusInfo {
-		int stops_on_route;
-		int unique_stops;
-		long unsigned int route_lenght;
-		double curvature;
-	};
-
-
+		
 	namespace detail {
 		struct StopToDistanceHasher {
 			size_t operator()(const std::pair<Stop*, Stop*>& info) const {
@@ -44,7 +20,6 @@ namespace transport_base_processing {
 			std::hash<std::string> hasher;
 		};
 	}
-
 	
 
 	class TransportCatalogue {

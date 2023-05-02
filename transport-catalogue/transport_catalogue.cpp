@@ -1,10 +1,11 @@
 #include "transport_catalogue.h"
-#include "stat_reader.h"
+
 #include <stdexcept>
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include "input_reader.h"
+#include <algorithm>
+
 #include "geo.h"
 
 using namespace std::literals;
@@ -79,11 +80,11 @@ namespace transport_base_processing {
             if (stops_to_distance.count({ start_of_dist, end_of_dist }) != 0) {
                 continue;
             }
-            stops_to_distance[{ start_of_dist, end_of_dist }] = calculator::ComputeDistance({ start_of_dist->coordinates.lat , start_of_dist->coordinates.lng }, { end_of_dist->coordinates.lat ,end_of_dist->coordinates.lng });
+            stops_to_distance[{ start_of_dist, end_of_dist }] = geo::ComputeDistance({ start_of_dist->coordinates.lat , start_of_dist->coordinates.lng }, { end_of_dist->coordinates.lat ,end_of_dist->coordinates.lng });
             if (stops_to_distance.count({ end_of_dist, start_of_dist }) != 0) {
                 continue;
             }
-            stops_to_distance[{ end_of_dist, start_of_dist}] = calculator::ComputeDistance({ end_of_dist->coordinates.lat ,end_of_dist->coordinates.lng }, { start_of_dist->coordinates.lat , start_of_dist->coordinates.lng });
+            stops_to_distance[{ end_of_dist, start_of_dist}] = geo::ComputeDistance({ end_of_dist->coordinates.lat ,end_of_dist->coordinates.lng }, { start_of_dist->coordinates.lat , start_of_dist->coordinates.lng });
         }
 
     }
@@ -100,7 +101,7 @@ namespace transport_base_processing {
         tmp.push_back(left);
         for (int i = 1; i < busname_to_bus.at(busname)->route.size(); ++i) {
             Stop* right = busname_to_bus.at(busname)->route[i];
-            bus_info.curvature += calculator::ComputeDistance({ left->coordinates.lat, left->coordinates.lng }, { right->coordinates.lat, right->coordinates.lng });
+            bus_info.curvature += geo::ComputeDistance({ left->coordinates.lat, left->coordinates.lng }, { right->coordinates.lat, right->coordinates.lng });
             if (stop_to_distance.count({ left, right }) != 0) {
                 bus_info.route_lenght += stop_to_distance.at({ left, right });
             }
