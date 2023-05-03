@@ -103,10 +103,10 @@ namespace transport_base_processing {
             Stop* right = busname_to_bus.at(busname)->route[i];
             bus_info.curvature += geo::ComputeDistance({ left->coordinates.lat, left->coordinates.lng }, { right->coordinates.lat, right->coordinates.lng });
             if (stop_to_distance.count({ left, right }) != 0) {
-                bus_info.route_lenght += stop_to_distance.at({ left, right });
+                bus_info.route_length += stop_to_distance.at({ left, right });
             }
             else {
-                bus_info.route_lenght += stop_to_distance.at({ right, left });
+                bus_info.route_length += stop_to_distance.at({ right, left });
             }
             left = right;
             if (std::count(tmp.begin(), tmp.end(), right) == 0) {
@@ -115,7 +115,7 @@ namespace transport_base_processing {
             }
 
         }
-        bus_info.curvature = bus_info.route_lenght / bus_info.curvature;
+        bus_info.curvature = bus_info.route_length / bus_info.curvature;
         return bus_info;
     }
 
@@ -129,7 +129,7 @@ namespace transport_base_processing {
     std::ostream& operator<<(std::ostream& out, const BusInfo& info) {
         out << info.stops_on_route << " stops on route, "s;
         out << info.unique_stops << " unique stops, "s;
-        out << std::setprecision(6) << info.route_lenght * 1.0 << " route length, "s;
+        out << std::setprecision(6) << info.route_length * 1.0 << " route length, "s;
         out << std::setprecision(6) << info.curvature << " curvature"s;
         return out;
 

@@ -11,16 +11,19 @@
             std::string_view req_type = (*request_ptr).at("type"s).AsString();
             if (req_type == "Stop"sv) {
                 Dict result{ {"request_id"s, Node((*request_ptr).at("id"s).AsInt())} };
-                const auto* set_of_buses = db_.GetStopInfo((*request_ptr).at("name"s).AsString());
-                if (set_of_buses == nullptr) {
+                if (db_.FindStop((*request_ptr).at("name"s).AsString()) == nullptr) {
                     result["error_message"s] = Node("not found"s);
                 }
                 else {
+                    const auto* set_of_buses = db_.GetStopInfo((*request_ptr).at("name"s).AsString());
                     Array buses;
-                    for (const auto& bus : *set_of_buses) {
-                        buses.push_back(Node(bus));
-                    }
-                    result["buses"s] = Node(buses);
+                        if (set_of_buses != nullptr) {
+                           for (const auto& bus : *set_of_buses) {
+                                    buses.push_back(Node(bus));
+                                }
+                            
+                        }
+                        result["buses"s] = Node(buses);
                 }
                 document.push_back(Node(std::move(result)));
             }
@@ -32,7 +35,7 @@
                 }
                 else {
                     result["curvature"s] = Node(bus_info.value().curvature);
-                    result["route_length"s] = Node(bus_info.value().route_lenght);
+                    result["route_length"s] = Node(bus_info.value().route_length);
                     result["stop_count"s] = Node(bus_info.value().stops_on_route);
                     result["unique_stop_count"s] = Node(bus_info.value().unique_stops);
 

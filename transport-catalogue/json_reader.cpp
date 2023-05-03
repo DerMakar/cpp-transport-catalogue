@@ -6,8 +6,8 @@ namespace json {
     using transport_base_processing::Bus;
 
     void JsonBaseProcessing::CreateBase(transport_base_processing::TransportCatalogue& base) {
-        const Dict* data = std::get_if<Dict>(&document_.GetRoot().GetValue());
-        const Array* base_request = std::get_if<Array>(&(*data).at("base_requests"s).GetValue());
+        const Dict* data = &document_.GetRoot().AsMap();
+        const Array* base_request = &(*data).at("base_requests"s).AsArray();
         std::vector<Stop> stops_to_add = std::move(ParseStopRequests(base_request));
 
         for (Stop& stop : stops_to_add) {
@@ -30,27 +30,27 @@ namespace json {
     }
 
     const Array* JsonBaseProcessing::GetStatRequest() const {
-        const Dict* data = std::get_if<Dict>(&document_.GetRoot().GetValue());
-        const Array* stat_request = std::get_if<Array>(&(*data).at("stat_requests"s).GetValue());
+        const Dict* data = &document_.GetRoot().AsMap();
+        const Array* stat_request = &(*data).at("stat_requests"s).AsArray();
         return stat_request;
     }
 
     std::vector<Stop> JsonBaseProcessing::ParseStopRequests(const Array* data) {
         std::vector<Stop> stops_to_add;
         for (const auto& request_in_collection : *data) {
-            const Dict* request = std::get_if<Dict>(&request_in_collection.GetValue());
-            if (std::get<std::string>((*request).at("type"s).GetValue()) != "Stop"s) {
+            const Dict* request = &request_in_collection.AsMap();
+            if ((*request).at("type"s).AsString() != "Stop"s) {
                 continue;
             }
             else {
                 Stop stop;
-                stop.name = std::get<std::string>((*request).at("name"s).GetValue());
-                stop.coordinates.lat = std::get<double>((*request).at("latitude"s).GetValue());
-                stop.coordinates.lng = std::get<double>((*request).at("longitude"s).GetValue());
+                stop.name = (*request).at("name"s).AsString();
+                stop.coordinates.lat = (*request).at("latitude"s).AsDouble();
+                stop.coordinates.lng = (*request).at("longitude"s).AsDouble();
                 if ((*request).count("road_distances"s) != 0) {
-                    const Dict* stops_distance_info = std::get_if<Dict>(&(*request).at("road_distances"s).GetValue());
+                    const Dict* stops_distance_info = &(*request).at("road_distances"s).AsMap();
                     for (const auto& [stop_name, dist] : *stops_distance_info) {
-                        stop_to_stop_distances[stop.name][stop_name] = std::get<int>(dist.GetValue());
+                        stop_to_stop_distances[stop.name][stop_name] = dist.AsInt();
                     }
                 }
                 stops_to_add.push_back(std::move(stop));
@@ -62,8 +62,8 @@ namespace json {
     std::vector<Bus> JsonBaseProcessing::ParseBusRequests(const Array* data, transport_base_processing::TransportCatalogue& base_) {
         std::vector<Bus> bases_to_add;
         for (const auto & request_in_collection : *data) {
-            const Dict* request = std::get_if<Dict>(&request_in_collection.GetValue());
-            if (std::get<std::string>((*request).at("type"s).GetValue()) != "Bus"s) {
+            const Dict* request = &request_in_collection.AsMap();
+            if ((*request).at("type"s).AsString() != "Bus"s) {
                 continue;
             }
             else {
@@ -94,6 +94,9 @@ namespace json {
     
     StopDistancesInfo JsonBaseProcessing::ParseStopDistInfo(std::string& stop) {
         StopDistancesInfo result; // std::vector<std::pair<long unsigned int, std::string>>
+        if (stop_to_stop_distances.count(stop) == 0) {
+            return {};
+        }
         result.reserve(stop_to_stop_distances.at(stop).size() + 1);
         result.push_back({ 0, stop });
         for (const auto& [stop_name, dist] : stop_to_stop_distances.at(stop)) {

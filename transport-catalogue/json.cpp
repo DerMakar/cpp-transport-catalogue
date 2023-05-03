@@ -321,17 +321,21 @@ Node LoadNull(istream& input) {
 Node LoadBool(istream& input) {
     std::string text;
     getline(input, text, ',');
-    auto brackets_pos = text.find('}');
-    if(brackets_pos != std::string::npos) text.erase(brackets_pos);
+    auto brackets1_pos = text.find('}');
+    auto brackets2_pos = text.find(']');
+    if(brackets2_pos != std::string::npos) text.erase(brackets2_pos);
+    if (brackets1_pos != std::string::npos) text.erase(brackets1_pos);
     text = Trim(text);
     if (text == "true"s) {
         input.putback(',');
-        if (brackets_pos != std::string::npos) input.putback('}');
+        if (brackets2_pos != std::string::npos) input.putback(']');
+        if (brackets1_pos != std::string::npos) input.putback('}');
         return Node(true);
     }
     else if (text == "false"s) {
        input.putback(',');
-       if (brackets_pos != std::string::npos) input.putback('}');
+       if (brackets2_pos != std::string::npos) input.putback(']');
+       if (brackets1_pos != std::string::npos) input.putback('}');
        return Node(false);
     }
     else {
