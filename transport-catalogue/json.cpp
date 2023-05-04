@@ -51,6 +51,10 @@ namespace json {
         return std::holds_alternative<int>(value_);
     }
 
+    bool Node::IsLUInt() const {
+        return std::holds_alternative<long unsigned int>(value_);
+    }
+
     bool Node::IsDouble() const {
         return holds_alternative<double>(value_) || holds_alternative<int>(value_);
     }
@@ -85,6 +89,14 @@ namespace json {
         }
             throw logic_error("no int in Node"s);
         
+    }
+
+    long unsigned int Node::AsLUInt() const {
+        if (IsLUInt()) {
+            return std::get<long unsigned int>(value_);
+        }
+        throw logic_error("no long unsint in Node"s);
+
     }
 
     double Node::AsDouble() const {
@@ -155,11 +167,14 @@ Node LoadArray(istream& input) {
     if (c != '[') {
         throw ParsingError("Error: Expected '['");
     }
-    while (input.peek() != ']') {
+    input >> std::ws;
+    c = input.peek();
+    while (c != ']') {
         input >> std::ws;
         result.push_back(LoadNode(input));
-        input >> std::ws;  
-        if (input.peek() == ',') {
+        input >> std::ws;
+        c = input.peek();
+        if (c == ',') {
             input >> c; 
         }
         else if (input.peek() != ']') {

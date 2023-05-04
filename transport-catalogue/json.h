@@ -42,7 +42,7 @@ public:
 
     Node(int value);
 
-    Node(long unsigned value);
+    Node(long unsigned int value);
 
     Node(double value);
 
@@ -53,6 +53,8 @@ public:
     const Value& GetValue() const; // return value_
     
     bool IsInt() const;
+
+    bool IsLUInt() const;
 
     bool IsDouble() const;
 
@@ -69,6 +71,8 @@ public:
     bool IsMap() const;
 
     int AsInt() const;
+
+    long unsigned int AsLUInt() const;
     
     double AsDouble() const;
     

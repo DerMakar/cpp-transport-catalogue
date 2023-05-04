@@ -24,4 +24,5 @@ namespace geo {
         * earth_radius;
     }
 
+
 }  // namespace geo

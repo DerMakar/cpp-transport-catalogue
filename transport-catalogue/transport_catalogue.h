@@ -38,6 +38,7 @@ namespace transport_base_processing {
 		const std::unordered_map<std::string_view, Stop*>& GetStopsMap ();
 		const std::deque<Bus>& GetBuses() const;
 		const std::deque<Stop>& GetStops() const;
+		const std::vector<geo::Coordinates>& GetCoordCollect() const;
 		const DistanceInfo& GetDistanceCollection() const;
 		const std::set<std::string>* GetStopInfo(std::string_view stopname) const;
 		void CountDistances(std::string_view);
@@ -50,6 +51,7 @@ namespace transport_base_processing {
 		std::unordered_map<std::string_view, std::set<std::string>> stopname_to_bus;
 		std::unordered_map<std::pair<Stop*, Stop*>, long unsigned int, detail::StopToDistanceHasher> stop_to_distance;
 		DistanceInfo stops_to_distance;
+		std::vector<geo::Coordinates> coordinates_collection;
 		
 	};
 

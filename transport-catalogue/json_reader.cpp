@@ -7,6 +7,10 @@ namespace json {
 
     void JsonBaseProcessing::CreateBase(transport_base_processing::TransportCatalogue& base) {
         const Dict* data = &document_.GetRoot().AsMap();
+        
+        const Dict* render_settings = &(*data).at("render_settings"s).AsMap();
+        ParseRenderSettings(render_settings);
+        
         const Array* base_request = &(*data).at("base_requests"s).AsArray();
         std::vector<Stop> stops_to_add = std::move(ParseStopRequests(base_request));
 
@@ -27,6 +31,10 @@ namespace json {
 
         
 
+    }
+
+    const renderer::RenderSettings& JsonBaseProcessing::GetRenderSet() const {
+        return render_settings_;
     }
 
     const Array* JsonBaseProcessing::GetStatRequest() const {
@@ -105,6 +113,51 @@ namespace json {
         return result;
     }
     
+    svg::Color JsonBaseProcessing::ParseColor(const Node& data) const {
+        svg::Color color;
+        if (!data.IsArray()) {
+             color = data.AsString();
+        }
+        else {
+            const Array& underlayer_color = data.AsArray();
+            if (underlayer_color.size() == 3) {
+                svg::Rgb rgb_color;
+                rgb_color.red = underlayer_color[0].AsInt();
+                rgb_color.green = underlayer_color[1].AsInt();
+                rgb_color.blue = underlayer_color[2].AsInt();
+                color = rgb_color;
+            }
+            else {
+                svg::Rgba rgba_color;
+                rgba_color.red = underlayer_color[0].AsInt();
+                rgba_color.green = underlayer_color[1].AsInt();
+                rgba_color.blue = underlayer_color[2].AsInt();
+                rgba_color.opacity = underlayer_color[3].AsDouble();
+                color = rgba_color;
+            }
+        }
+        return color;
+    }
+
+    void JsonBaseProcessing::ParseRenderSettings(const Dict* data) {
+        using namespace renderer;
+        render_settings_.width = (*data).at("width"s).AsDouble();
+        render_settings_.height = (*data).at("height"s).AsDouble();
+        render_settings_.padding = (*data).at("padding"s).AsDouble();
+        render_settings_.line_width = (*data).at("line_width"s).AsDouble();
+        render_settings_.stop_radius = (*data).at("stop_radius"s).AsDouble();
+        render_settings_.bus_label_font_size = static_cast<long unsigned int>((*data).at("bus_label_font_size"s).AsInt());
+        render_settings_.bus_label_offset.first = (*data).at("bus_label_offset"s).AsArray()[0].AsDouble();
+        render_settings_.bus_label_offset.second = (*data).at("bus_label_offset"s).AsArray()[1].AsDouble();
+        render_settings_.stop_label_font_size = static_cast<long unsigned int>((*data).at("bus_label_font_size"s).AsInt());
+        render_settings_.stop_label_offset.first = (*data).at("stop_label_offset"s).AsArray()[0].AsDouble();
+        render_settings_.stop_label_offset.second = (*data).at("stop_label_offset"s).AsArray()[1].AsDouble();
+        render_settings_.underlayer_color = ParseColor((*data).at("underlayer_color"s));
+        render_settings_.underlayer_width = (*data).at("underlayer_width"s).AsDouble();
+        for (Node color : (*data).at("color_palette"s).AsArray()) {
+            render_settings_.color_palette.push_back(ParseColor(color));
+        } 
+    }
 
    
 }// namespace json

@@ -38,7 +38,11 @@ namespace transport_base_processing {
 
     void TransportCatalogue::FullStopByBuses(const Bus& bus) {
         for (const Stop* stop : bus.route) {
+            if (stopname_to_bus.count(stop->name) == 0) {
+                coordinates_collection.push_back(stop->coordinates);
+            }
             stopname_to_bus[stop->name].insert(bus.name);
+            
         }
     }
 
@@ -62,6 +66,10 @@ namespace transport_base_processing {
 
     const std::deque<Stop>& TransportCatalogue::GetStops() const {
         return stops;
+    }
+
+    const std::vector<geo::Coordinates>& TransportCatalogue::GetCoordCollect() const {
+        return coordinates_collection;
     }
 
     const std::unordered_map<std::string_view, Stop*>& TransportCatalogue::GetStopsMap() {
