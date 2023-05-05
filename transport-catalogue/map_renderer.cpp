@@ -68,7 +68,7 @@ namespace renderer {
                     SetStrokeLineJoin(svg::StrokeLineJoin::ROUND).SetStrokeColor(renderer_data_.underlayer_color));
                 result.push_back(text);
                 
-                if (*route.begin() == *next(route.end(), -1) && *next(route.begin(), 1) == *next(route.end(), -2)) {
+                if (*route.begin() == *next(route.end(), -1) && *next(route.begin(), 1) == *next(route.end(), -2) && *route.begin() != *next(route.begin(), + route.size() / 2)) {
                     background.SetPosition(route[route.size() / 2]);
                     result.push_back(background);
                     text.SetPosition(route[route.size() / 2]);
