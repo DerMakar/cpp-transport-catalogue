@@ -1,17 +1,5 @@
 #include "map_renderer.h"
 
-/*
- * В этом файле вы можете разместить код, отвечающий за визуализацию карты маршрутов в формате SVG.
- * Визуализация маршрутов вам понадобится во второй части итогового проекта.
- * Пока можете оставить файл пустым.
- * 
- * Вершины каждой ломаной — это координаты соответствующих остановок. Выведите их в порядке следования от первой до первой остановки по кольцевому маршруту. 
- Для проецирования координат остановок на SVG-карту используйте класс SphereProjector. Количество вершин должно быть равно величине stop_count из ответа на запрос Bus. Если маршрут некольцевой, 
- то есть "is_roundtrip": false, каждый отрезок между соседними остановками должен быть нарисован дважды: сначала в прямом, а потом в обратном направлении.
- */
-
-
-// определение методов корректировки координат
 
 namespace renderer {
     const RenderSettings& MapRenderer::GetRendSet() const {
@@ -27,8 +15,8 @@ namespace renderer {
         using namespace std::literals;
         std::vector<svg::Polyline> result;
         result.reserve(bus_route_points.size());
-        int color_index = 0;
-        int max_color_id = renderer_data_.color_palette.size() - 1;
+        size_t color_index = 0;
+        size_t max_color_id = renderer_data_.color_palette.size() - 1;
         for (const auto& [bus, route] : bus_route_points) {
             if (route.empty()) {
                 continue;
@@ -50,6 +38,84 @@ namespace renderer {
             ++color_index;
             if (color_index > max_color_id) color_index = 0;
             }
+        }
+        return result;
+    }
+
+    std::vector<svg::Text> MapRenderer::CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const {
+        using namespace std::literals;
+        using namespace svg;
+        std::vector<Text> result;
+        result.reserve(bus_route_points.size() * 2);
+        size_t color_index = 0;
+        size_t max_color_id = renderer_data_.color_palette.size() - 1;
+        for (const auto& [bus, route] : bus_route_points) {
+            if (route.empty()) {
+                continue;
+            }
+            else {
+                Text text;
+                Text background;
+                text.SetPosition(route[0]).
+                    SetOffset(renderer_data_.bus_label_offset).
+                    SetFontSize(renderer_data_.bus_label_font_size).
+                    SetFontFamily("Verdana"s).
+                    SetFontWeight("bold"s).SetData(static_cast<std::string>(bus)).SetFillColor(renderer_data_.color_palette[color_index]);
+                background = text;
+                result.push_back(background.SetFillColor(renderer_data_.underlayer_color).
+                    SetStrokeWidth(renderer_data_.underlayer_width).
+                    SetStrokeLineCap(svg::StrokeLineCap::ROUND).
+                    SetStrokeLineJoin(svg::StrokeLineJoin::ROUND).SetStrokeColor(renderer_data_.underlayer_color));
+                result.push_back(text);
+                
+                if (*route.begin() == *next(route.end(), -1) && *next(route.begin(), 1) == *next(route.end(), -2)) {
+                    background.SetPosition(route[route.size() / 2]);
+                    result.push_back(background);
+                    text.SetPosition(route[route.size() / 2]);
+                    result.push_back(text);
+                }
+                ++color_index;
+                if (color_index > max_color_id) color_index = 0;
+            }
+           
+        }
+        return result;
+    }
+    
+    std::vector<svg::Circle> MapRenderer::CreateStops(const std::map<std::string_view, svg::Point>& stops_on_routes) const {
+        using namespace svg;
+        using namespace std::literals;
+        std::vector<svg::Circle> result;
+        result.reserve(stops_on_routes.size());
+        for (const auto& [stop, point] : stops_on_routes) {
+            Circle circle;
+            circle.SetCenter(point).SetRadius(renderer_data_.stop_radius).SetFillColor("white"s);
+            result.push_back(circle);
+        }
+        return result;
+    }
+
+    std::vector<svg::Text> MapRenderer::CreateStopsNames(const std::map<std::string_view, svg::Point>& stops_on_routes) const {
+        using namespace svg;
+        using namespace std::literals;
+        std::vector<svg::Text> result;
+        result.reserve(stops_on_routes.size());
+        for (const auto& [stop, point] : stops_on_routes) {
+            Text text;
+            Text background;
+            background.SetFillColor("black"s).
+                SetPosition(point).
+                SetOffset(renderer_data_.stop_label_offset).
+                SetFontSize(renderer_data_.stop_label_font_size).
+                SetFontFamily("Verdana"s).SetData(static_cast<std::string>(stop));
+            text = background;
+            background.SetFillColor(renderer_data_.underlayer_color).
+                SetStrokeColor(renderer_data_.underlayer_color).
+                SetStrokeWidth(renderer_data_.underlayer_width).
+                SetStrokeLineCap(svg::StrokeLineCap::ROUND).
+                SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
+            result.push_back(background);
+            result.push_back(text);
         }
         return result;
     }

@@ -4,6 +4,14 @@ namespace svg {
 
     using namespace std::literals;
 
+    bool operator==(const Point& lhs, const Point& rhs) {
+        return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+    }
+
+    bool operator!=(const Point& lhs, const Point& rhs) {
+        return !(lhs.x == rhs.x);
+    }
+
     std::ostream& operator<<(std::ostream& out, Color color) {
         if (std::holds_alternative<std::string>(color)) {
             const std::string& color_ = std::get<std::string>(color);
@@ -28,6 +36,8 @@ namespace svg {
             return out << "none"s;
         }
     }
+
+     
 
     void ColorDetection::operator()(std::monostate) const {
         out << "none";
@@ -96,7 +106,7 @@ namespace svg {
     void Circle::RenderObject(const RenderContext& context) const {
         auto& out = context.out;
         out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
-        out << "r=\""sv << radius_ << "\" "sv;
+        out << "r=\""sv << radius_ << "\""sv;
         RenderAttrs(context.out);
         out << "/>"sv;
     }
@@ -164,7 +174,10 @@ namespace svg {
 
     void Text::RenderObject(const RenderContext& context) const {
         auto& out = context.out;
-        out << "<text x=\""sv << pos_.x << "\" y=\""sv << pos_.y << "\" dx=\""sv;
+        
+        out << "<text "sv;
+        RenderAttrs(context.out);
+        out <<" x=\""s << pos_.x << "\" y=\""sv << pos_.y << "\" dx=\""sv;
         out << offset_.x << "\" dy=\""sv << offset_.y << "\" font-size=\""sv << size_ << "\""sv;
         if (!font_family_.empty()) {
             out << " font-family=\""sv << font_family_ << "\" "sv;
@@ -172,7 +185,7 @@ namespace svg {
         if (!font_weight_.empty()) {
             out << "font-weight=\""sv << font_weight_ << "\""sv;
         }
-        RenderAttrs(context.out);
+        
         out << ">"sv;
         if (!data_.empty()) {
             out << data_;

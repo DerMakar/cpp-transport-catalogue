@@ -21,6 +21,10 @@ namespace svg {
         double y = 0;
     };
 
+    bool operator==(const Point& lhs, const Point& rhs);
+
+    bool operator!=(const Point& lhs, const Point& rhs);
+
     struct Rgb {
         Rgb() = default;
         Rgb(uint8_t red_, uint8_t green_, uint8_t blue_)
@@ -55,7 +59,7 @@ namespace svg {
 
     inline const Color NoneColor{ "none" };
 
-    struct ColorDetection {
+        struct ColorDetection {
         std::ostream& out;
 
         void operator()(std::monostate) const;

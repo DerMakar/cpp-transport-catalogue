@@ -1,6 +1,8 @@
 #pragma once
 #include "geo.h"
 #include "svg.h"
+#include "transport_catalogue.h"
+
 
 #include <algorithm>
 #include <cstdlib>
@@ -9,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <deque>
 
 namespace renderer {
     struct RenderSettings {
@@ -18,9 +21,9 @@ namespace renderer {
         double line_width = 0.0; // ширина линии от 0 до 100000
         double stop_radius = 0.0; // радиус кружка Stop от 0 до 100000
         unsigned long int bus_label_font_size = 0; //  размер текста, которым написаны названия автобусных маршрутов
-        std::pair<double, double> bus_label_offset = { 0.0, 0.0 }; // Задаёт значения свойств dx и dy SVG - элемента <text>  от –100000 до 100000
+        svg::Point bus_label_offset = { 0.0, 0.0 }; // Задаёт значения свойств dx и dy SVG - элемента <text>  от –100000 до 100000
         unsigned long int stop_label_font_size = 0; // размер текста, которым отображаются названия остановок от 0 до 100000
-        std::pair<double, double> stop_label_offset = { 0.0, 0.0 }; // смещение названия остановки относительно её координат от –100000 до 100000
+        svg::Point stop_label_offset = { 0.0, 0.0 }; // смещение названия остановки относительно её координат от –100000 до 100000
         svg::Color underlayer_color;
         double underlayer_width = 0.0; // толщина подложки под названиями остановок и маршрутов адаёт значение атрибута stroke - width элемента <text> от 0 до 100000 
         std::vector<svg::Color>  color_palette; // цветовая палитра
@@ -34,9 +37,14 @@ namespace renderer {
         void SetRendSet(const RenderSettings& renderer_data);
 
         std::vector<svg::Polyline> CreateBusLine(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;
-              
-        // void Draw(svg::ObjectContainer& container) const override;
 
+        std::vector<svg::Text> CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;
+
+        std::vector<svg::Circle> CreateStops(const std::map<std::string_view, svg::Point>& stops_on_routes) const;
+
+        std::vector<svg::Text> CreateStopsNames(const std::map<std::string_view, svg::Point>& stops_on_routes) const;
+        
+              
         const RenderSettings& GetRendSet() const;
 
         

@@ -147,11 +147,11 @@ namespace json {
         render_settings_.line_width = (*data).at("line_width"s).AsDouble();
         render_settings_.stop_radius = (*data).at("stop_radius"s).AsDouble();
         render_settings_.bus_label_font_size = static_cast<long unsigned int>((*data).at("bus_label_font_size"s).AsInt());
-        render_settings_.bus_label_offset.first = (*data).at("bus_label_offset"s).AsArray()[0].AsDouble();
-        render_settings_.bus_label_offset.second = (*data).at("bus_label_offset"s).AsArray()[1].AsDouble();
-        render_settings_.stop_label_font_size = static_cast<long unsigned int>((*data).at("bus_label_font_size"s).AsInt());
-        render_settings_.stop_label_offset.first = (*data).at("stop_label_offset"s).AsArray()[0].AsDouble();
-        render_settings_.stop_label_offset.second = (*data).at("stop_label_offset"s).AsArray()[1].AsDouble();
+        render_settings_.bus_label_offset.x = (*data).at("bus_label_offset"s).AsArray()[0].AsDouble();
+        render_settings_.bus_label_offset.y = (*data).at("bus_label_offset"s).AsArray()[1].AsDouble();
+        render_settings_.stop_label_font_size = static_cast<long unsigned int>((*data).at("stop_label_font_size"s).AsInt());
+        render_settings_.stop_label_offset.x = (*data).at("stop_label_offset"s).AsArray()[0].AsDouble();
+        render_settings_.stop_label_offset.y = (*data).at("stop_label_offset"s).AsArray()[1].AsDouble();
         render_settings_.underlayer_color = ParseColor((*data).at("underlayer_color"s));
         render_settings_.underlayer_width = (*data).at("underlayer_width"s).AsDouble();
         for (Node color : (*data).at("color_palette"s).AsArray()) {
