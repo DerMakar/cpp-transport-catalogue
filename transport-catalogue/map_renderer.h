@@ -29,9 +29,9 @@ namespace renderer {
     class MapRenderer {
     public:
         
-        MapRenderer(const RenderSettings& renderer_data) : renderer_data_(renderer_data) {
+        MapRenderer() = default;
 
-        }
+        void SetRendSet(const RenderSettings& renderer_data);
 
         std::vector<svg::Polyline> CreateBusLine(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;
               
@@ -41,7 +41,7 @@ namespace renderer {
 
         
     private:
-        const RenderSettings& renderer_data_;
+        RenderSettings renderer_data_;
 };
 } // namespace render
 

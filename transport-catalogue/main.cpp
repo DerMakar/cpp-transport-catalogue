@@ -19,19 +19,18 @@ json::Document LoadJSON(const std::string& s) {
 В stdout программа должна вывести SVG-изображение карты. Обрабатывать содержимое ключа stat_requests и выводить JSON с ответами на запросы к транспортному справочнику не нужно.
 */
 int main() {
-	transport_base_processing::TransportCatalogue base;
-		
+	using namespace std;
+    using namespace svg;
+    
+    transport_base_processing::TransportCatalogue base;
 	json::Document test = json::Load(std::cin);
-
 	json::JsonBaseProcessing input_json (test);
-
 	input_json.CreateBase(base);
-
-	RequestHandler requests(base, input_json.GetRenderSet());
-
-	requests.RenderMap().Render(std::cout);
-	
-	return 0;
+	renderer::MapRenderer map_render;
+	map_render.SetRendSet(input_json.GetRenderSet());
+	RequestHandler requests(base, map_render);
+	requests.RenderMap().Render(cout);
+    return 0;
 }
 
 /*

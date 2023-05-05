@@ -107,7 +107,7 @@ namespace transport_base_processing {
         tmp.reserve(busname_to_bus.at(busname)->route.size());
         Stop* left = busname_to_bus.at(busname)->route[0];
         tmp.push_back(left);
-        for (int i = 1; i < busname_to_bus.at(busname)->route.size(); ++i) {
+        for (size_t i = 1; i < busname_to_bus.at(busname)->route.size(); ++i) {
             Stop* right = busname_to_bus.at(busname)->route[i];
             bus_info.curvature += geo::ComputeDistance({ left->coordinates.lat, left->coordinates.lng }, { right->coordinates.lat, right->coordinates.lng });
             if (stop_to_distance.count({ left, right }) != 0) {

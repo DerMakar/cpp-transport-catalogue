@@ -60,25 +60,24 @@
     svg::Document RequestHandler::RenderMap() const {
         using transport_base_processing::Bus;
         using transport_base_processing::Stop;
-
         svg::Document result; // private: std::deque<std::unique_ptr<Object>> objects_;
         SphereProjector point_corrector (db_.GetCoordCollect().begin(), db_.GetCoordCollect().end(), renderer_.GetRendSet().width, renderer_.GetRendSet().height, renderer_.GetRendSet().padding);
         std::deque<Bus> all_buses = db_.GetBuses();
         sort(all_buses.begin(), all_buses.end(), [](const Bus& lhs, const Bus& rhs) {return lhs.name < rhs.name; });
         std::map<std::string_view, std::vector<svg::Point>> route_coords;
-        for (const auto& bus : all_buses) {
+       for (const auto& bus : all_buses) {
             if (bus.route.empty()) {
                 route_coords[bus.name] = {};
             }
             else {
                 for (const Stop* stop : bus.route) {
-                    route_coords[bus.name].push_back(point_corrector(stop->coordinates)); //svg::Point SphereProjector::operator()(geo::Coordinates coords)
+                    route_coords[bus.name].push_back(point_corrector(stop->coordinates));
                 }
             }
 
         }
-        for (const auto& polyline : renderer_.CreateBusLine(route_coords)) {
-            result.Add(polyline);
+        for (auto polyline : renderer_.CreateBusLine(route_coords)) {
+            result.Add(std::move(polyline));
         }
         return result;
 

@@ -18,12 +18,15 @@ namespace renderer {
         return renderer_data_;
     }
     
+    void MapRenderer::SetRendSet(const RenderSettings& renderer_data) {
+        renderer_data_ = renderer_data;
+    }
     
     std::vector<svg::Polyline> MapRenderer::CreateBusLine(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const {
         using namespace svg;
         using namespace std::literals;
         std::vector<svg::Polyline> result;
-        Polyline polyline;
+        result.reserve(bus_route_points.size());
         int color_index = 0;
         int max_color_id = renderer_data_.color_palette.size() - 1;
         for (const auto& [bus, route] : bus_route_points) {
@@ -31,10 +34,18 @@ namespace renderer {
                 continue;
             }
             else {
+                Polyline polyline;
                 for (const auto& point : route) {
                     polyline.AddPoint(point);
                 }
-                polyline.SetStrokeColor(renderer_data_.color_palette[color_index]).SetFillColor("none"s).SetStrokeWidth(renderer_data_.line_width).SetStrokeLineCap(svg::StrokeLineCap::ROUND).SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
+                
+        polyline.SetStrokeColor(renderer_data_.color_palette[color_index]).
+            SetStrokeColor(renderer_data_.color_palette[color_index]).
+            SetStrokeColor(renderer_data_.color_palette[color_index]).
+            SetFillColor("none"s).
+            SetStrokeWidth(renderer_data_.line_width).
+            SetStrokeLineCap(svg::StrokeLineCap::ROUND).
+            SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
             result.push_back(std::move(polyline));
             ++color_index;
             if (color_index > max_color_id) color_index = 0;
