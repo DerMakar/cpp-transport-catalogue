@@ -29,15 +29,7 @@ int main() {
 	renderer::MapRenderer map_render;
 	map_render.SetRendSet(input_json.GetRenderSet());
 	RequestHandler requests(base, map_render);
-	requests.RenderMap().Render(cout);
+	requests.JasonStatRequest(input_json.GetStatRequest(), std::cout);
     return 0;
 }
 
-/*
-Ожидаемый вывод
-<?xml version="1.0" encoding="UTF-8" ?>
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
-  <polyline points="99.2283,329.5 50,232.18 99.2283,329.5" fill="none" stroke="green" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="550,190.051 279.22,50 333.61,269.08 550,190.051" fill="none" stroke="rgb(255,160,0)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-*/

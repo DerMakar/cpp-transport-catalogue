@@ -1,5 +1,6 @@
 #include "request_handler.h"
 
+#include <sstream>
 
     using namespace std::literals;
     void RequestHandler::JasonStatRequest(const json::Array* stat_request, std::ostream& out) {
@@ -9,8 +10,8 @@
         for (const auto& request : *stat_request) {
             const Dict* request_ptr = std::get_if<Dict>(&request.GetValue());
             std::string_view req_type = (*request_ptr).at("type"s).AsString();
+            Dict result{ {"request_id"s, Node((*request_ptr).at("id"s).AsInt())} };
             if (req_type == "Stop"sv) {
-                Dict result{ {"request_id"s, Node((*request_ptr).at("id"s).AsInt())} };
                 if (db_.FindStop((*request_ptr).at("name"s).AsString()) == nullptr) {
                     result["error_message"s] = Node("not found"s);
                 }
@@ -28,7 +29,6 @@
                 document.push_back(Node(std::move(result)));
             }
             else if (req_type == "Bus"sv) {
-                Dict result{ {"request_id"s, Node((*request_ptr).at("id"s).AsInt())} };
                 std::optional<transport_base_processing::BusInfo> bus_info = db_.GetBusInfo((*request_ptr).at("name"s).AsString());
                 if (!bus_info) {
                     result["error_message"s] = Node("not found"s);
@@ -40,6 +40,12 @@
                     result["unique_stop_count"s] = Node(bus_info.value().unique_stops);
 
                 }
+                document.push_back(Node(std::move(result)));
+            }
+            else if (req_type == "Map"sv){
+            std::stringstream strm;
+                RenderMap().Render(strm);
+                result["map"s] = Node(strm.str());
                 document.push_back(Node(std::move(result)));
             }
         }
