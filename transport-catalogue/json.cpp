@@ -19,31 +19,7 @@ namespace json {
         }
     }
 
-    Node::Node(nullptr_t value) : value_(value) {
-    }
-
-    Node::Node(Array value) : value_(move(value)) {
-    }
-
-    Node::Node(Dict value) : value_(move(value)) {
-    }
-
-    Node::Node(long unsigned int value) : value_(value) {
-    }
-
-    Node::Node(int value) : value_(value) {
-    }
-
-    Node::Node(double value) : value_(value) {
-    }
-
-    Node::Node(std::string value) : value_(move(value)) {
-    }
-
-    Node::Node(bool value) : value_(value) {
-    }
-
-        const Node::Value& Node::GetValue() const {
+    const Node::Value& Node::GetValue() const {
         return value_;
     }
 

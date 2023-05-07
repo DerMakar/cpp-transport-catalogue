@@ -1,7 +1,7 @@
 #include "map_renderer.h"
 
 
-namespace renderer {
+namespace transport_base_processing {
     const RenderSettings& MapRenderer::GetRendSet() const {
         return renderer_data_;
     }
@@ -121,7 +121,7 @@ namespace renderer {
     }
     
 
-}// namespace renderer
+}// namespace transport_base_processing
 
 inline const double EPSILON = 1e-6;
 bool IsZero(double value) {

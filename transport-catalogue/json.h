@@ -34,21 +34,10 @@ public:
 
     Node() = default;
 
-    Node(nullptr_t value);
+    template <typename V>
+    Node(V value) : value_(value) {
 
-    Node(Array value);
-
-    Node(Dict value);
-
-    Node(int value);
-
-    Node(long unsigned int value);
-
-    Node(double value);
-
-    Node(std::string value);
-
-    Node(bool value);
+    }
 
     const Value& GetValue() const; // return value_
     

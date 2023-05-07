@@ -13,7 +13,7 @@
 #include <utility>
 #include <deque>
 
-namespace renderer {
+namespace transport_base_processing {
     struct RenderSettings {
         double width = 0.0; // ширина холста от 0 до 100000
         double height = 0.0; // высота холста от 0 до 100000
@@ -51,22 +51,7 @@ namespace renderer {
     private:
         RenderSettings renderer_data_;
 };
-} // namespace render
-
-template <typename DrawableIterator>
-void DrawPicture(DrawableIterator begin, DrawableIterator end, svg::ObjectContainer& target) {
-    for (auto it = begin; it != end; ++it) {
-        (*it)->Draw(target);
-    }
-}
-
-template <typename Container>
-void DrawPicture(const Container& container, svg::ObjectContainer& target) {
-    using namespace std;
-    DrawPicture(begin(container), end(container), target);
-}
-
-
+} // namespace transport_base_processing
 
 bool IsZero(double value);
 

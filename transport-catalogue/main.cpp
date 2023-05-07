@@ -26,10 +26,10 @@ int main() {
 	json::Document test = json::Load(std::cin);
 	json::JsonBaseProcessing input_json (test);
 	input_json.CreateBase(base);
-	renderer::MapRenderer map_render;
+	transport_base_processing::MapRenderer map_render;
 	map_render.SetRendSet(input_json.GetRenderSet());
-	RequestHandler requests(base, map_render);
-	requests.JasonStatRequest(input_json.GetStatRequest(), std::cout);
+	transport_base_processing::RequestHandler requests(base, map_render);
+	Print(input_json.GetStatRequest(requests), std::cout);
     return 0;
 }
 
