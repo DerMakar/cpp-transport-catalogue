@@ -49,7 +49,7 @@ namespace transport_base_processing {
         for (auto& polyline : renderer_.CreateBusLine(route_coords)) {
             result.Add(std::move(polyline));
         }
-        for (auto& text : renderer_.CreateRouteNames(route_coords)) {
+        for (auto& text : renderer_.CreateRouteNames(route_coords, db_)) {
             result.Add(std::move(text));
         }
         for (auto& stop : renderer_.CreateStops(stops_on_routes)) {

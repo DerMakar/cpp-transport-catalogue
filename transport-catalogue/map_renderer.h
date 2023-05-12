@@ -38,7 +38,7 @@ namespace transport_base_processing {
 
         std::vector<svg::Polyline> CreateBusLine(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;
 
-        std::vector<svg::Text> CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;
+        std::vector<svg::Text> CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points, const transport_base_processing::TransportCatalogue& db) const;
 
         std::vector<svg::Circle> CreateStops(const std::map<std::string_view, svg::Point>& stops_on_routes) const;
 

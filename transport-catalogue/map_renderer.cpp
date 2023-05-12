@@ -42,7 +42,7 @@ namespace transport_base_processing {
         return result;
     }
 
-    std::vector<svg::Text> MapRenderer::CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const {
+    std::vector<svg::Text> MapRenderer::CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points, const transport_base_processing::TransportCatalogue& db) const {
         using namespace std::literals;
         using namespace svg;
         std::vector<Text> result;
@@ -67,8 +67,7 @@ namespace transport_base_processing {
                     SetStrokeLineCap(svg::StrokeLineCap::ROUND).
                     SetStrokeLineJoin(svg::StrokeLineJoin::ROUND).SetStrokeColor(renderer_data_.underlayer_color));
                 result.push_back(text);
-                
-                if (*route.begin() == *next(route.end(), -1) && *next(route.begin(), 1) == *next(route.end(), -2) && *route.begin() != *next(route.begin(), + route.size() / 2)) {
+                if(db.FindBus(bus) -> is_circle == false && *route.begin() != *next(route.begin(), +route.size() / 2)) {
                     background.SetPosition(route[route.size() / 2]);
                     result.push_back(background);
                     text.SetPosition(route[route.size() / 2]);

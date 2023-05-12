@@ -85,24 +85,26 @@ private:
 };
 
 template <typename Value>
-void PrintValue(const Value& value, std::ostream& out) {
+void PrintValue(const Value& value, std::ostream& out, [[maybe_unused]] int indent_step) {
     out << value;
 }
 
 // Перегрузка функции PrintValue для вывода значений null
-void PrintValue(std::nullptr_t, std::ostream& out);
+void PrintValue(std::nullptr_t, std::ostream& out, [[maybe_unused]] int indent_step);
 // Другие перегрузки функции PrintValue пишутся аналогично
-void PrintValue(const std::string& str, std::ostream& out);
+void PrintValue(const std::string& str, std::ostream& out, [[maybe_unused]] int indent_step);
 
-void PrintValue(bool bool_, std::ostream& out);
+void PrintValue(bool bool_, std::ostream& out, [[maybe_unused]] int indent_step);
 
-void PrintNode(const Node& node, std::ostream& out);
+void PrintIndent(std::ostream& out, int indent_step);
 
-void PrintValue(const Array& array_, std::ostream& out);
+void PrintNode(const Node& node, std::ostream& out, int indent_step);
+
+void PrintValue(const Array& array_, std::ostream& out, int indent_step);
 
 void ParseString(const std::string& str, std::ostream& out);
 
-void PrintValue(const Dict& dict, std::ostream& out);
+void PrintValue(const Dict& dict, std::ostream& out, int indent_step);
 
 
 
@@ -122,6 +124,6 @@ private:
 
 Document Load(std::istream& input);
 
-void Print(const Document& doc, std::ostream& output);
+void Print(const Document& doc, std::ostream& output, int indent_step = 0);
 
 }  // namespace json

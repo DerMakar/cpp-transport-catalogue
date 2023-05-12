@@ -180,10 +180,10 @@ namespace svg {
         out <<" x=\""s << pos_.x << "\" y=\""sv << pos_.y << "\" dx=\""sv;
         out << offset_.x << "\" dy=\""sv << offset_.y << "\" font-size=\""sv << size_ << "\""sv;
         if (!font_family_.empty()) {
-            out << " font-family=\""sv << font_family_ << "\" "sv;
+            out << " font-family=\""sv << font_family_ << "\""sv;
         }
         if (!font_weight_.empty()) {
-            out << "font-weight=\""sv << font_weight_ << "\""sv;
+            out << " font-weight=\""sv << font_weight_ << "\""sv;
         }
         
         out << ">"sv;

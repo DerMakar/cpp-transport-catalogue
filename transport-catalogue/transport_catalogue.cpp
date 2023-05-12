@@ -137,8 +137,8 @@ namespace transport_base_processing {
     std::ostream& operator<<(std::ostream& out, const BusInfo& info) {
         out << info.stops_on_route << " stops on route, "s;
         out << info.unique_stops << " unique stops, "s;
-        out << std::setprecision(6) << info.route_length * 1.0 << " route length, "s;
-        out << std::setprecision(6) << info.curvature << " curvature"s;
+        out << std::setprecision(9) << double(info.route_length) << " route length, "s;
+        out << std::setprecision(9) << info.curvature << " curvature"s;
         return out;
 
     }

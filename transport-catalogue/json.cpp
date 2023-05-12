@@ -405,7 +405,7 @@ Node LoadNode(istream& input) {
 
 }  // namespace
 
-void PrintValue(std::nullptr_t, std::ostream& out) {
+void PrintValue(std::nullptr_t, std::ostream& out, [[maybe_unused]]  int indent_step) {
     out << "null"sv;
 }
 
@@ -434,52 +434,65 @@ void ParseString(const std::string& str, std::ostream& out) {
     out << "\"" << result << "\""; 
 }
    
-void PrintValue(const std::string& str, std::ostream& out) {
+void PrintValue(const std::string& str, std::ostream& out, [[maybe_unused]]  int indent_step) {
     ParseString(str, out);
 }
 
-void PrintValue(bool bool_, std::ostream& out) {
+void PrintValue(bool bool_, std::ostream& out, [[maybe_unused]]  int indent_step) {
     out << boolalpha << bool_;    
 }
 
-void PrintValue(const Array& array_, std::ostream& out) {
+void PrintIndent(std::ostream& out, [[maybe_unused]] int indent_step) {
+    for (int i = 0; i < indent_step; ++i) {
+        out << ' ';
+    }
+}
+
+void PrintValue(const Array& array_, std::ostream& out, int indent_step) {
     bool IsFirst = true;
-    out << "["s;
+    out << "["s << std::endl;
     for (const auto& node : array_) {
         if (!IsFirst) {
-            out << ", "s;
+            out << ","s << std::endl;
 
         }
         else {
             IsFirst = false;
         }
-        PrintNode(node, out);   
+        PrintIndent(out, indent_step);
+        PrintNode(node, out, indent_step);
 
     }
+    out << std::endl;
+    PrintIndent(out, indent_step - 4);
     out << "]"s;
 }
 
-void PrintValue(const Dict& dict, std::ostream& out) {
-    out << "{"s;
+void PrintValue(const Dict& dict, std::ostream& out, int indent_step) {
+    out << "{"s << std::endl;
     bool IsFirst = true;
     for (const auto& [str, node] : dict) {
         if (!IsFirst) {
-            out << ", "s;
+            out << ","s << std::endl;
         }
         else {
             IsFirst = false;
         }
-        PrintNode(str, out);
+        PrintIndent(out, indent_step);
+        PrintNode(str, out, indent_step);
         out << ": "s;
-        PrintNode(node, out);
+        PrintNode(node, out, indent_step);
     }
+    out << std::endl;
+    PrintIndent(out, indent_step - 4);
     out << "}"s;
 }
 
-void PrintNode(const Node& node, std::ostream& out) {
+void PrintNode(const Node& node, std::ostream& out, int indent_step) {
     std::visit(
-        [&out](const auto& value) { PrintValue(value, out); },
+        [&out, indent_step](const auto& value) { PrintValue(value, out, indent_step + 4); },
         node.GetValue());
+
 }
 
 Document::Document(Node root)
@@ -494,8 +507,8 @@ Document Load(istream& input) {
     return Document{LoadNode(input)};
 }
 
-void Print(const Document& doc, std::ostream& output) {
-    PrintNode(doc.GetRoot(), output);
+void Print(const Document& doc, std::ostream& output, int indent_step) {
+    PrintNode(doc.GetRoot(), output, indent_step);
 }
 
 bool Document::operator==(const Document& rhs) const {

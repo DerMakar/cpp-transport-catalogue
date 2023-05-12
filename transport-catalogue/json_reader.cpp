@@ -38,7 +38,7 @@ namespace json {
         return render_settings_;
     }
 
-     Document JsonBaseProcessing::GetStatRequest(const transport_base_processing::RequestHandler handler) const {
+    Document JsonBaseProcessing::GetStatRequest(const transport_base_processing::RequestHandler handler) const {
         const Dict* data = &document_.GetRoot().AsMap();
         const Array* stat_request = &(*data).at("stat_requests"s).AsArray();
         Builder document;
@@ -72,7 +72,7 @@ namespace json {
                     }
                     else {
                         document.Key("curvature"s).Value(bus_info.value().curvature)
-                        .Key("route_length"s).Value(bus_info.value().route_length)
+                        .Key("route_length"s).Value(double(bus_info.value().route_length))
                         .Key("stop_count"s).Value(bus_info.value().stops_on_route)
                         .Key("unique_stop_count"s).Value(bus_info.value().unique_stops);
 
