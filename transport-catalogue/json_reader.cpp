@@ -1,5 +1,6 @@
 #include "json_reader.h"
 
+
 namespace json {
     using namespace std::literals;
     using transport_base_processing::Stop;
@@ -37,54 +38,56 @@ namespace json {
         return render_settings_;
     }
 
-    Document JsonBaseProcessing::GetStatRequest(const transport_base_processing::RequestHandler handler) const {
+     Document JsonBaseProcessing::GetStatRequest(const transport_base_processing::RequestHandler handler) const {
         const Dict* data = &document_.GetRoot().AsMap();
         const Array* stat_request = &(*data).at("stat_requests"s).AsArray();
-        Array document;
-        document.reserve(stat_request->size());
+        Builder document;
+        document.StartArray();
             for (const auto& request : *stat_request) {
                 const Dict* request_ptr = std::get_if<Dict>(&request.GetValue());
                 std::string_view req_type = (*request_ptr).at("type"s).AsString();
-                Dict result{ {"request_id"s, Node((*request_ptr).at("id"s).AsInt())} };
+                document.StartDict().Key("request_id"s).Value((*request_ptr).at("id"s).AsInt());
                 if (req_type == "Stop"sv) {
                     if (handler.GetBase().FindStop((*request_ptr).at("name"s).AsString()) == nullptr) {
-                        result["error_message"s] = Node("not found"s);
+                        document.Key("error_message"s).Value("not found"s);
                     }
                     else {
                         const auto* set_of_buses = handler.GetBase().GetStopInfo((*request_ptr).at("name"s).AsString());
-                        Array buses;
+                        document.Key("buses"s).StartArray();
                         if (set_of_buses != nullptr) {
-                            for (const auto& bus : *set_of_buses) {
-                                buses.push_back(Node(bus));
+                            for (const auto bus : *set_of_buses) {
+                                document.Value(bus);
                             }
+                            
 
                         }
-                        result["buses"s] = Node(buses);
+                        document.EndArray();
                     }
-                    document.push_back(Node(std::move(result)));
+                    
                 }
                 else if (req_type == "Bus"sv) {
                     std::optional<transport_base_processing::BusInfo> bus_info = handler.GetBase().GetBusInfo((*request_ptr).at("name"s).AsString());
                     if (!bus_info) {
-                        result["error_message"s] = Node("not found"s);
+                        document.Key("error_message"s).Value("not found"s);
                     }
                     else {
-                        result["curvature"s] = Node(bus_info.value().curvature);
-                        result["route_length"s] = Node(bus_info.value().route_length);
-                        result["stop_count"s] = Node(bus_info.value().stops_on_route);
-                        result["unique_stop_count"s] = Node(bus_info.value().unique_stops);
+                        document.Key("curvature"s).Value(bus_info.value().curvature)
+                        .Key("route_length"s).Value(bus_info.value().route_length)
+                        .Key("stop_count"s).Value(bus_info.value().stops_on_route)
+                        .Key("unique_stop_count"s).Value(bus_info.value().unique_stops);
 
                     }
-                    document.push_back(Node(std::move(result)));
+                    
                 }
                 else if (req_type == "Map"sv) {
                     std::stringstream strm;
                     handler.RenderMap().Render(strm);
-                    result["map"s] = Node(strm.str());
-                    document.push_back(Node(std::move(result)));
+                    document.Key("map"s).Value(strm.str());
+                    
                 }
+                document.EndDict();
             }
-            return Document(Node(document));
+            return Document{ document.EndArray().Build() };
     }
 
     std::vector<Stop> JsonBaseProcessing::ParseStopRequests(const Array* data) {

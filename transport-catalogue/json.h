@@ -40,6 +40,8 @@ public:
     }
 
     const Value& GetValue() const; // return value_
+
+    Value& GetValueRef();
     
     bool IsInt() const;
 

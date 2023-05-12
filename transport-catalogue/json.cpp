@@ -22,6 +22,11 @@ namespace json {
     const Node::Value& Node::GetValue() const {
         return value_;
     }
+    
+    Node::Value& Node::GetValueRef() {
+        return value_;
+    }
+
 
     bool Node::IsInt() const {
         return std::holds_alternative<int>(value_);
@@ -346,6 +351,10 @@ Node LoadDict(istream& input) {
     while (c != '}') {
         input >> std::ws;
         input >> c;
+        if (c == '}') {
+            input.putback(c);
+            break;
+        }
         string key = LoadString(input).AsString();
         input >> c;
         input >> std::ws;
