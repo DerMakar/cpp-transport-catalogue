@@ -2,11 +2,10 @@
 #include <sstream>
 #include <string>
 
-using namespace std;
 
 namespace json {
     namespace {
-        string Trim(string_view str) {
+        std::string Trim(std::string_view str) {
             while (!str.empty() && (str.front() == ' ' || str.front() == '\t'
                 || str.front() == '\n' || str.front() == '\r')) {
                 str.remove_prefix(1);
@@ -15,7 +14,7 @@ namespace json {
                 || str.back() == '\n' || str.back() == '\r')) {
                 str.remove_suffix(1);
             }
-            return string(str);
+            return std::string(str);
         }
     }
 
@@ -37,7 +36,7 @@ namespace json {
     }
 
     bool Node::IsDouble() const {
-        return holds_alternative<double>(value_) || holds_alternative<int>(value_);
+        return std::holds_alternative<double>(value_) || std::holds_alternative<int>(value_);
     }
 
     bool Node::IsPureDouble() const {
@@ -65,22 +64,25 @@ namespace json {
     }
 
     int Node::AsInt() const {
+        using namespace std::literals;
         if (IsInt()){
             return std::get<int>(value_);
         }
-            throw logic_error("no int in Node"s);
+            throw std::logic_error("no int in Node"s);
         
     }
 
     long unsigned int Node::AsLUInt() const {
+        using namespace std::literals;
         if (IsLUInt()) {
             return std::get<long unsigned int>(value_);
         }
-        throw logic_error("no long unsint in Node"s);
+        throw std::logic_error("no long unsint in Node"s);
 
     }
 
     double Node::AsDouble() const {
+        using namespace std::literals;
         if (IsPureDouble()) {
             return std::get<double>(value_);
         }
@@ -94,6 +96,7 @@ namespace json {
     }
 
     bool Node::AsBool() const {
+        using namespace std::literals;
         if(IsBool()){
             return std::get<bool>(value_);
         }
@@ -103,7 +106,8 @@ namespace json {
     }
 
     const std::string& Node::AsString() const {
-       if(IsString()){
+        using namespace std::literals;
+        if(IsString()){
             return std::get<std::string>(value_);
         }
         
@@ -112,6 +116,7 @@ namespace json {
     }
 
     const Array& Node::AsArray() const {
+        using namespace std::literals;
         if(IsArray()){
             return std::get<Array>(value_);
         }
@@ -121,7 +126,8 @@ namespace json {
     }
 
     const Dict& Node::AsMap() const {
-       if(IsMap()){
+        using namespace std::literals;
+        if(IsMap()){
             return std::get<Dict>(value_);
         }
         
@@ -139,9 +145,9 @@ namespace json {
 
    
 namespace {
-    Node LoadNode(istream& input);
+    Node LoadNode(std::istream& input);
 
-Node LoadArray(istream& input) {
+Node LoadArray(std::istream& input) {
     Array result;
     char c = 'a';
     input >> c;
@@ -226,14 +232,14 @@ Node LoadNumber(std::istream& input) {
         if (is_int) {
             // Сначала пробуем преобразовать строку в int
             try {
-                return Node(move(std::stoi(parsed_num)));
+                return Node(std::move(std::stoi(parsed_num)));
             }
             catch (...) {
                 // В случае неудачи, например, при переполнении,
                 // код ниже попробует преобразовать строку в double
             }
         }
-        return Node(move(std::stod(parsed_num)));
+        return Node(std::move(std::stod(parsed_num)));
     }
     catch (...) {
         throw ParsingError("Failed to convert "s + parsed_num + " to number"s);
@@ -242,7 +248,7 @@ Node LoadNumber(std::istream& input) {
 
 
 
-Node LoadString(istream& input) {
+Node LoadString(std::istream & input) {
     using namespace std::literals;
 
     auto it = std::istreambuf_iterator<char>(input);
@@ -303,7 +309,8 @@ Node LoadString(istream& input) {
     return Node(move(s));
 }
 
-Node LoadNull(istream& input) {
+Node LoadNull(std::istream& input) {
+    using namespace std::literals;
     std::string text;
     getline(input, text, ',');
     text = Trim(text);
@@ -314,7 +321,8 @@ Node LoadNull(istream& input) {
     throw ParsingError("Failed to read nuul from stream"s);
 }
 
-Node LoadBool(istream& input) {
+Node LoadBool(std::istream& input) {
+    using namespace std::literals;
     std::string text;
     getline(input, text, ',');
     auto brackets1_pos = text.find('}');
@@ -340,7 +348,8 @@ Node LoadBool(istream& input) {
 }
 
 // { \"key1\": \"value1\", \"key2\": 42 }
-Node LoadDict(istream& input) {
+Node LoadDict(std::istream& input) {
+    using namespace std::literals;
     Dict result;
     char c = 'a';
     input >> c;
@@ -355,7 +364,7 @@ Node LoadDict(istream& input) {
             input.putback(c);
             break;
         }
-        string key = LoadString(input).AsString();
+        std::string key = LoadString(input).AsString();
         input >> c;
         input >> std::ws;
         result[key] = LoadNode(input);
@@ -374,7 +383,8 @@ Node LoadDict(istream& input) {
     return Node(move(result));
 }
 
-Node LoadNode(istream& input) {
+Node LoadNode(std::istream& input) {
+    using namespace std::literals;
     char c = 'a';
     input >> c;
 
@@ -406,6 +416,7 @@ Node LoadNode(istream& input) {
 }  // namespace
 
 void PrintValue(std::nullptr_t, std::ostream& out, [[maybe_unused]]  int indent_step) {
+    using namespace std::literals;
     out << "null"sv;
 }
 
@@ -439,7 +450,7 @@ void PrintValue(const std::string& str, std::ostream& out, [[maybe_unused]]  int
 }
 
 void PrintValue(bool bool_, std::ostream& out, [[maybe_unused]]  int indent_step) {
-    out << boolalpha << bool_;    
+    out << std::boolalpha << bool_;    
 }
 
 void PrintIndent(std::ostream& out, [[maybe_unused]] int indent_step) {
@@ -449,6 +460,7 @@ void PrintIndent(std::ostream& out, [[maybe_unused]] int indent_step) {
 }
 
 void PrintValue(const Array& array_, std::ostream& out, int indent_step) {
+    using namespace std::literals;
     bool IsFirst = true;
     out << "["s << std::endl;
     for (const auto& node : array_) {
@@ -469,6 +481,7 @@ void PrintValue(const Array& array_, std::ostream& out, int indent_step) {
 }
 
 void PrintValue(const Dict& dict, std::ostream& out, int indent_step) {
+    using namespace std::literals;
     out << "{"s << std::endl;
     bool IsFirst = true;
     for (const auto& [str, node] : dict) {
@@ -496,14 +509,14 @@ void PrintNode(const Node& node, std::ostream& out, int indent_step) {
 }
 
 Document::Document(Node root)
-    : root_(move(root)) {
+    : root_(std::move(root)) {
 }
 
 const Node& Document::GetRoot() const {
     return root_;
 }
 
-Document Load(istream& input) {
+Document Load(std::istream& input) {
     return Document{LoadNode(input)};
 }
 
