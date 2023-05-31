@@ -28,7 +28,8 @@ int main() {
 	input_json.CreateBase(base);
 	transport_base_processing::MapRenderer map_render;
 	map_render.SetRendSet(input_json.GetRenderSet());
-	transport_base_processing::RequestHandler requests(base, map_render);
+	graph::Router base_router(base.SetGraf());
+	transport_base_processing::RequestHandler requests(base, map_render, base_router);
 	Print(input_json.GetStatRequest(requests), std::cout);
     return 0;
 }

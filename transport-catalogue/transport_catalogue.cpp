@@ -134,6 +134,63 @@ namespace transport_base_processing {
         return &stopname_to_bus.at(stop);
     }
 
+    void TransportCatalogue::SetBusWaitTime(unsigned short int time) {
+        bus_wait_time = time;
+    }
+    void TransportCatalogue::SetBusVelocity(double speed) {
+        const int meters_in_km = 1000;
+        const int sec_in_min = 60;
+        bus_velocity = speed * meters_in_km / sec_in_min;
+    }
+
+     
+    const graph::DirectedWeightedGraph<double>& TransportCatalogue::SetGraf() {
+        transport_catalogue_graf = std::move(graph::DirectedWeightedGraph<double>(stops.size()));
+        graph::EdgeId cur_edge_id = 0;
+        for (const auto& bus : buses) {
+            auto cur_stop = bus.route.begin();
+            while(cur_stop < bus.route.end() - 1){
+                bool IsFirst = true;
+                size_t from = (*cur_stop)->id;
+                int span_counter = 0;
+                for (auto it = cur_stop + 1; it < bus.route.end(); ++it) { // пока есть лишняя итерация на создание для трех-остановочного круга ОжСтоп0 + путь1 + путь2 + путь3 - ребро из начала в начало по всему кругу
+                    size_t to = (*it)->id;
+                    double distance = 0.0;
+                    if (stop_to_distance.count(std::make_pair(*(prev(it)), *it)) != 0) {
+                        distance = stop_to_distance.at(std::make_pair(*(prev(it)), *it));
+                    }
+                    else {
+                        distance = stop_to_distance.at(std::make_pair(*it, *(prev(it))));
+                    }
+                    graph::Edge<double> edge = { from, to, distance / bus_velocity };
+                    if (IsFirst) {
+                        edge.weight += bus_wait_time;
+                        IsFirst = false;
+                    }
+                    else {
+                        edge.weight += transport_catalogue_graf.GetEdge(cur_edge_id).weight;
+                    }
+                    cur_edge_id = transport_catalogue_graf.AddEdge(edge);
+                    edge_info.push_back({ bus.name, ++span_counter });
+                }
+                ++cur_stop;
+            }
+        }
+        return transport_catalogue_graf;
+    }
+
+    const graph::DirectedWeightedGraph<double>& TransportCatalogue::GetGraf() const  {
+        return transport_catalogue_graf;
+    }
+
+    const std::vector<RouteInfo>& TransportCatalogue::GetEdgeInfo() const {
+        return edge_info;
+    }
+
+    unsigned short int TransportCatalogue::GetBusWaitTime() const {
+        return bus_wait_time;
+    }
+
     std::ostream& operator<<(std::ostream& out, const BusInfo& info) {
         out << info.stops_on_route << " stops on route, "s;
         out << info.unique_stops << " unique stops, "s;

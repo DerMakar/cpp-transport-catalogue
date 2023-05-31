@@ -14,7 +14,7 @@ namespace transport_base_processing {
 
 
         // MapRenderer понадобится в следующей части итогового проекта
-        RequestHandler(const transport_base_processing::TransportCatalogue& db, const transport_base_processing::MapRenderer& renderer) : db_(db), renderer_(renderer) {
+        RequestHandler(const transport_base_processing::TransportCatalogue& db, const transport_base_processing::MapRenderer& renderer, const graph::Router<double>& db_router) : db_(db), renderer_(renderer), db_router_(db_router){
 
         }
 
@@ -23,6 +23,9 @@ namespace transport_base_processing {
 
         // Возвращает маршруты, проходящие через
         const std::set<std::string>* GetBusesByStop(const std::string_view& stop_name) const;
+
+        // Возвращает оптимальный маршрут от остановки from до остановки to
+        std::optional<graph::Router<double>::RouteInfo> BuildRoute(std::string_view from, std::string_view to) const;
 
         const transport_base_processing::TransportCatalogue& GetBase() const;
 
@@ -35,5 +38,6 @@ namespace transport_base_processing {
         // RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
         const transport_base_processing::TransportCatalogue& db_;
         const transport_base_processing::MapRenderer& renderer_;
+        const graph::Router<double>& db_router_;
     };
 } // namespace transport_base_processing

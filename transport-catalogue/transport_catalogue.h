@@ -6,6 +6,8 @@
 #include <optional>
 
 #include "domain.h"
+#include "router.h"
+
 
 namespace transport_base_processing {
 		
@@ -42,8 +44,17 @@ namespace transport_base_processing {
 		const DistanceInfo& GetDistanceCollection() const;
 		const std::set<std::string>* GetStopInfo(std::string_view stopname) const;
 		void CountDistances(std::string_view);
+		void SetBusWaitTime(unsigned short int time);
+		void SetBusVelocity(double speed);
+		const graph::DirectedWeightedGraph<double>& SetGraf();
+		const graph::DirectedWeightedGraph<double>& GetGraf() const;
+		const std::vector<RouteInfo>& GetEdgeInfo() const;
+		unsigned short int GetBusWaitTime() const;
 
 	private:
+		unsigned short int bus_wait_time = 0;
+		double bus_velocity = 0;
+		
 		std::deque<Stop> stops;
 		std::deque<Bus> buses;
 		std::unordered_map<std::string_view, Stop*> stopname_to_stop;
@@ -52,6 +63,9 @@ namespace transport_base_processing {
 		std::unordered_map<std::pair<Stop*, Stop*>, long unsigned int, detail::StopToDistanceHasher> stop_to_distance;
 		DistanceInfo stops_to_distance;
 		std::vector<geo::Coordinates> coordinates_collection;
+		graph::DirectedWeightedGraph<double> transport_catalogue_graf;
+		std::vector<RouteInfo> edge_info;
+		
 		
 	};
 

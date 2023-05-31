@@ -7,6 +7,7 @@ namespace transport_base_processing {
 	struct Stop {
 		std::string name;
 		geo::Coordinates coordinates;
+		size_t id;
 	};
 
 	struct Bus {
@@ -20,6 +21,11 @@ namespace transport_base_processing {
 		int unique_stops;
 		long unsigned int route_length;
 		double curvature;
+	};
+
+	struct RouteInfo {
+		std::string_view bus_name;
+		int spans;
 	};
 
 

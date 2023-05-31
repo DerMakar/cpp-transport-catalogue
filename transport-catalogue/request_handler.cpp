@@ -21,6 +21,17 @@ namespace transport_base_processing {
         return db_.GetStopInfo(stop_name);
     }
 
+    std::optional<graph::Router<double>::RouteInfo> RequestHandler::BuildRoute(std::string_view from, std::string_view to) const {
+        size_t vertex_from = db_.FindStop(from)->id;
+        size_t vertex_to = db_.FindStop(to)->id;
+        if (vertex_from != vertex_to) {
+            return db_router_.BuildRoute(vertex_from, vertex_to);
+        }
+        else {
+            return graph::Router<double>::RouteInfo();
+        }
+    }
+
     svg::Document RequestHandler::RenderMap() const {
         using transport_base_processing::Bus;
         using transport_base_processing::Stop;

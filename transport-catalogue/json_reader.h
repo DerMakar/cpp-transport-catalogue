@@ -31,6 +31,7 @@ namespace json {
 		void ParseRenderSettings(const Dict* data);
 		std::vector<transport_base_processing::Stop> ParseStopRequests(const Array* data);
 		std::vector< transport_base_processing::Bus> ParseBusRequests(const Array* data, transport_base_processing::TransportCatalogue& base);
+		void ParseRoutingSettings(const Dict* data, transport_base_processing::TransportCatalogue& base);
 		StopDistancesInfo ParseStopDistInfo(std::string& stop);
 		
 	};
