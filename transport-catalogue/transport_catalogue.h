@@ -6,7 +6,7 @@
 #include <optional>
 
 #include "domain.h"
-#include "router.h"
+
 
 
 namespace transport_base_processing {
@@ -28,6 +28,7 @@ namespace transport_base_processing {
 		
 	public:
 		using DistanceInfo = std::unordered_map<std::pair<Stop*, Stop*>, double, detail::StopToDistanceHasher>;
+		using RouteLength = std::unordered_map<std::pair<Stop*, Stop*>, long unsigned int, detail::StopToDistanceHasher>;
 		using StopDistancesInfo = std::vector<std::pair<long unsigned int, std::string>>;
 		
 		void AddStop(Stop stop);
@@ -41,15 +42,12 @@ namespace transport_base_processing {
 		const std::deque<Bus>& GetBuses() const;
 		const std::deque<Stop>& GetStops() const;
 		const std::vector<geo::Coordinates>& GetCoordCollect() const;
-		const DistanceInfo& GetDistanceCollection() const;
+		const RouteLength& GetDistanceCollection() const;
 		const std::set<std::string>* GetStopInfo(std::string_view stopname) const;
 		void CountDistances(std::string_view);
 		void SetBusWaitTime(unsigned short int time);
 		void SetBusVelocity(double speed);
-		const graph::DirectedWeightedGraph<double>& SetGraf();
-		const graph::DirectedWeightedGraph<double>& GetGraf() const;
-		const std::vector<RouteInfo>& GetEdgeInfo() const;
-		unsigned short int GetBusWaitTime() const;
+		std::pair<unsigned short int, double> GetWaitVelocityInfo() const;
 
 	private:
 		unsigned short int bus_wait_time = 0;
@@ -60,13 +58,9 @@ namespace transport_base_processing {
 		std::unordered_map<std::string_view, Stop*> stopname_to_stop;
 		std::unordered_map<std::string_view, Bus*> busname_to_bus;
 		std::unordered_map<std::string_view, std::set<std::string>> stopname_to_bus;
-		std::unordered_map<std::pair<Stop*, Stop*>, long unsigned int, detail::StopToDistanceHasher> stop_to_distance;
+		RouteLength stop_to_distance;
 		DistanceInfo stops_to_distance;
 		std::vector<geo::Coordinates> coordinates_collection;
-		graph::DirectedWeightedGraph<double> transport_catalogue_graf;
-		std::vector<RouteInfo> edge_info;
-		
-		
 	};
 
 	std::ostream& operator<<(std::ostream& out, const BusInfo& info);

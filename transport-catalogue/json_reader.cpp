@@ -1,10 +1,5 @@
 #include "json_reader.h"
 
-/*
-Во входной JSON добавляется ключ routing_settings, значение которого — словарь с двумя ключами:
-bus_wait_time — время ожидания автобуса на остановке, в минутах. от 1 до 1000 минут
-bus_velocity — скорость автобуса, в км/ч. от 1 до 1000
-*/
 namespace json {
     using namespace std::literals;
     using transport_base_processing::Stop;
@@ -36,49 +31,12 @@ namespace json {
         for (Bus& bus : bases_to_add) {
            base.AddBus(std::move(bus));
         }
-
-        
-
     }
 
     const transport_base_processing::RenderSettings& JsonBaseProcessing::GetRenderSet() const {
         return render_settings_;
     }
-    /*
-    В список stat_requests добавляются элементы с "type": "Route" — это запросы на построение маршрута между двумя остановками.
-    Помимо стандартных свойств id и type, они содержат ещё два: from — остановка, где нужно начать маршрут, to — остановка, где нужно закончить маршрут.
-    Оба значения — названия существующих в базе остановок. Однако они, возможно, не принадлежат ни одному автобусному маршруту.
-    На маршруте человек может использовать несколько автобусов. Один автобус даже можно использовать несколько раз, если на некоторых участках он делает большой крюк и проще срезать на другом автобусе.
-    Маршрут должен быть наиболее оптимален по времени. Если маршрутов с минимально возможным суммарным временем несколько, допускается вывести любой из них
-    При прохождении маршрута время расходуется на два типа активностей:
-        Ожидание автобуса. Всегда длится bus_wait_time минут.
-        Поездка на автобусе. Всегда длится ровно такое количество времени, которое требуется для преодоления данного расстояния (road_distances) со скоростью bus_velocity. 
-     На конечных остановках все автобусы высаживают пассажиров и уезжают в парк.
-     Даже если человек едет на кольцевом — "is_roundtrip": true — маршруте и хочет проехать мимо конечной, он будет вынужден выйти и подождать тот же самый автобус ровно bus_wait_time минут.
-     Ответ на запрос
-     {
-    "request_id": <id запроса>, - если маршрута нет {"request_id": <id запроса>,"error_message": "not found"}
-    "total_time": <суммарное время>, — суммарное время в минутах, которое требуется для прохождения маршрута, выведенное в виде вещественного числа.
-    "items": [  — список элементов маршрута, каждый из которых описывает непрерывную активность пассажира, требующую временных затрат. А именно элементы маршрута бывают двух типов.
-        <элементы маршрута> 
-        Wait — подождать нужное количество минут (в нашем случае всегда bus_wait_time) на указанной остановке:
-        {
-        "type": "Wait",
-        "stop_name": "Biryulyovo",
-        "time": 6
-        }
-        Bus — проехать span_count остановок (перегонов между остановками) на автобусе bus, потратив указанное количество минут:
-        {
-        "type": "Bus",
-        "bus": "297",
-        "span_count": 2,
-        "time": 5.235
-        }
-
-    ]
-    }   
-
-    */
+    
     Document JsonBaseProcessing::GetStatRequest(const transport_base_processing::RequestHandler handler) const {
         const Dict* data = &document_.GetRoot().AsMap();
         const Array* stat_request = &(*data).at("stat_requests"s).AsArray();
@@ -135,15 +93,15 @@ namespace json {
                         document.Key("items"s).StartArray();
                         for (auto id : route_info.value().edges) {
                             document.StartDict();
-                            const auto& [stop_from, stop_to, weight] = handler.GetBase().GetGraf().GetEdge(id);
+                            const auto& [stop_from, stop_to, weight] = handler.GetTransportGraph().GetGraph().GetEdge(id);
                             document.Key("stop_name"s).Value(handler.GetBase().GetStops()[stop_from].name)
-                                .Key("time"s).Value(handler.GetBase().GetBusWaitTime())
+                                .Key("time"s).Value(handler.GetBase().GetWaitVelocityInfo().first)
                                 .Key("type"s).Value("Wait"s)
                                 .EndDict()
                                 .StartDict()
-                                .Key("bus"s).Value(std::string(handler.GetBase().GetEdgeInfo()[id].bus_name))
-                                .Key("span_count"s).Value(handler.GetBase().GetEdgeInfo()[id].spans)
-                                .Key("time"s).Value(weight - handler.GetBase().GetBusWaitTime())
+                                .Key("bus"s).Value(std::string(handler.GetTransportGraph().GetEdgeInfo()[id].bus_name))
+                                .Key("span_count"s).Value(handler.GetTransportGraph().GetEdgeInfo()[id].spans)
+                                .Key("time"s).Value(weight - handler.GetBase().GetWaitVelocityInfo().first)
                                 .Key("type"s).Value("Bus"s)
                                 .EndDict();
                         }
