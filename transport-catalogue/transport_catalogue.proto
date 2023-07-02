@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package transport_base_serialize;
+
+message Stop{
+	 string name = 1;
+	 double lat = 2;
+	 double lng = 3;	
+	 int32 id = 4;
+}
+
+message Bus {
+	string name = 1;
+	repeated int32 route = 2;
+	bool is_circle = 3;
+}
+
+message Distance {
+	int32 id_start = 1;
+	int32 id_finish = 2;
+	uint64 distance = 3;
+}
+
+
+message TransportCatalogue {
+	repeated Stop stops = 1;
+	repeated Bus buses = 2;
+	repeated Distance stop_to_distance = 3;
+}
+
