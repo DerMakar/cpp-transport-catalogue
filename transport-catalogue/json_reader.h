@@ -21,12 +21,16 @@ namespace json {
 		const transport_base_processing::RenderSettings& GetRenderSet() const;
 
 		Document GetStatRequest(const transport_base_processing::RequestHandler handler) const;
+
+		void ParseSerializationSet();
+
+		std::string_view GetFileName() const;
 	
 	private:
 		Document document_;
 		JsonStopDistanceMap stop_to_stop_distances;
 		transport_base_processing::RenderSettings render_settings_;
-
+		std::string filename;
 		svg::Color ParseColor(const Node& color_collection) const;
 		void ParseRenderSettings(const Dict* data);
 		std::vector<transport_base_processing::Stop> ParseStopRequests(const Array* data);

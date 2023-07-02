@@ -29,6 +29,11 @@ namespace transport_base_processing {
         }
     }
 
+    void TransportCatalogue::AddDistanceToMap(const Stop* start, const Stop* finish, long unsigned int distance) {
+        std::pair<Stop*, Stop*> stops_pair = std::make_pair(const_cast<Stop*>(start), const_cast<Stop*>(finish));
+        stop_to_distance[stops_pair] = distance;
+    }
+
 
     void TransportCatalogue::AddBus(Bus bus) {
         buses.push_back(std::move(bus));

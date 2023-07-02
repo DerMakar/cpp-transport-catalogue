@@ -33,6 +33,7 @@ namespace transport_base_processing {
 		
 		void AddStop(Stop stop);
 		void AddDistance(const StopDistancesInfo& info);
+		void AddDistanceToMap(const Stop* start, const Stop* finish, long unsigned int distance);
 		void AddBus(Bus bus);
 		void FullStopByBuses(const Bus& bus);
 		const Stop* FindStop(std::string_view stopname) const;

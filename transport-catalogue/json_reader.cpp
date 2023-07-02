@@ -16,6 +16,7 @@ namespace json {
         
         const Array* base_request = &(*data).at("base_requests"s).AsArray();
         std::vector<Stop> stops_to_add = std::move(ParseStopRequests(base_request));
+        
 
         for (Stop& stop : stops_to_add) {
             base.AddStop(stop);
@@ -31,6 +32,16 @@ namespace json {
         for (Bus& bus : bases_to_add) {
            base.AddBus(std::move(bus));
         }
+
+        const Dict* serialization_settings = &(*data).at("serialization_settings"s).AsMap();
+        filename = (*serialization_settings).at("file"s).AsString();
+        
+    }
+
+    void JsonBaseProcessing::ParseSerializationSet() {
+        const Dict* data = &document_.GetRoot().AsMap();
+        const Dict* serialization_settings = &(*data).at("serialization_settings"s).AsMap();
+        filename = (*serialization_settings).at("file"s).AsString();
     }
 
     const transport_base_processing::RenderSettings& JsonBaseProcessing::GetRenderSet() const {
@@ -237,6 +248,10 @@ namespace json {
     void JsonBaseProcessing::ParseRoutingSettings(const Dict* data, transport_base_processing::TransportCatalogue& base) {
         base.SetBusWaitTime((*data).at("bus_wait_time"s).AsInt());
         base.SetBusVelocity((*data).at("bus_velocity"s).AsDouble());
+    }
+
+    std::string_view JsonBaseProcessing::GetFileName() const {
+        return filename;
     }
 
    
