@@ -168,14 +168,16 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 		for (size_t m = 0; m < db_internal_data_size; ++m) {
 			transport_base_serialize::RouteInternalData ser_inter_data;
 			if (request_handler.GetRouter().GetRouteInternalData(i, m).has_value()) {
-				ser_inter_data.set_weight(request_handler.GetRouter().GetRouteInternalData(i, m).value().weight);
+				ser_inter_data.mutable_route_internal_data_opt()->set_weight(request_handler.GetRouter().GetRouteInternalData(i, m).value().weight);
 				if (request_handler.GetRouter().GetRouteInternalData(i, m).value().prev_edge.has_value()) {
-					ser_inter_data.set_prev_edge(request_handler.GetRouter().GetRouteInternalData(i, m).value().prev_edge.value());
+					ser_inter_data.mutable_route_internal_data_opt()->mutable_prev_edge()->
+						set_prev_edge(request_handler.GetRouter().GetRouteInternalData(i, m).value().prev_edge.value());
 				}
 			}
 			*router->add_routes_internal_data_() = ser_inter_data;
 		}
 	}
+	
 	//
 	// сериализация RoutingSet: int32 bus_wait_time, double bus_velocity
 	auto [wait_time, velocity] = request_handler.GetBase().GetWaitVelocityInfo();
@@ -267,6 +269,75 @@ transport_base_processing::MapRenderer DiserializeMapRenderer(const transport_ba
 	return transport_base_processing::MapRenderer(std::move(result));
 }
 
+const transport_base_processing::TransportGraph DiserializeTransportGraph(const transport_base_serialize::TransportCatalogue& base) {
+	//выгружаем граф
+	auto& f_graph_ptr = base.transport_router().transport_catalogue_graph().graph();
+	// выгружает вектор ребер
+	std::vector<graph::Edge<double>> edges;
+	edges.resize(f_graph_ptr.edges_size());
+	for (size_t i = 0; i < edges.size(); ++i) {
+		graph::Edge<double> edge;
+		edge.from = f_graph_ptr.edges(i).from();
+		edge.to = f_graph_ptr.edges(i).to();
+		edge.weight = f_graph_ptr.edges(i).weight();
+		edges[i] = std::move(edge);
+	}
+	// выгружаем вектор вершин
+	std::vector<std::vector<size_t>> incidence_lists;
+	incidence_lists.resize (f_graph_ptr.incidence_lists_size());
+	for (int i = 0; i < incidence_lists.size(); ++i) {
+		std::vector<size_t> incidence_list(f_graph_ptr.incidence_lists(i).incidence_list_size());
+		for (int m = 0; m < incidence_list.size(); ++m) {
+			incidence_list[m] = f_graph_ptr.incidence_lists(i).incidence_list(m);
+		}
+		incidence_lists[i] = std::move(incidence_list);
+	}
+	graph::DirectedWeightedGraph<double> result_graph(std::move(edges), std::move(incidence_lists));
+
+	// выгружаем информацию по маршрутам
+	std::vector<transport_base_processing::RouteInfo> edge_info;
+	auto& f_rout_info_ptr = base.transport_router().transport_catalogue_graph();
+	edge_info.resize(f_rout_info_ptr.route_infos_size());
+	for (int i = 0; i < edge_info.size(); ++i) {
+		transport_base_processing::RouteInfo info;
+		info.bus_name = f_rout_info_ptr.route_infos(i).bus_name();
+		info.spans = f_rout_info_ptr.route_infos(i).spans();
+		edge_info[i] = std::move(info);
+	}
+
+	transport_base_processing::TransportGraph result (std::move(result_graph), std::move(edge_info));
+
+	return result;
+}
+
+
+const graph::Router<double> DiserializeRouter(const graph::DirectedWeightedGraph<double>& db_graph, const transport_base_serialize::TransportCatalogue& base) {
+	std::vector<std::vector<std::optional<graph::Router<double>::RouteInternalData>>> routes_internal_data_;
+	routes_internal_data_.resize(base.transport_router().transport_catalogue_router_size());
+	for (int i = 0; i < routes_internal_data_.size(); ++i) {
+		std::vector<std::optional<graph::Router<double>::RouteInternalData>> route_internal_data_(base.transport_router().transport_catalogue_router(i).routes_internal_data__size());
+		for (int m = 0; m < route_internal_data_.size(); ++m) {
+			std::optional<graph::Router<double>::RouteInternalData> data;
+			if (base.transport_router().transport_catalogue_router(i).routes_internal_data_(m).has_route_internal_data_opt()) {
+				double weight = base.transport_router().transport_catalogue_router(i).routes_internal_data_(m).route_internal_data_opt().weight();
+				data = { weight,std::nullopt};
+				if (base.transport_router().transport_catalogue_router(i).routes_internal_data_(m).route_internal_data_opt().has_prev_edge()) {
+					graph::EdgeId prev_edge = base.transport_router().transport_catalogue_router(i).routes_internal_data_(m).route_internal_data_opt().prev_edge().prev_edge();
+					data = { weight,prev_edge };
+				}
+				
+			}
+			route_internal_data_[m] = data;
+		}
+		routes_internal_data_[i] = route_internal_data_;
+	}
+	bool internal_build_comd = false;
+	graph::Router<double> result (db_graph, internal_build_comd);
+	result.SetRoutesInternalData(std::move(routes_internal_data_));
+	return result;
+}
+
+
 
 
 void ProcessRequest(std::istream& input_json) {
@@ -281,6 +352,8 @@ void ProcessRequest(std::istream& input_json) {
 	}
 	const transport_base_processing::TransportCatalogue db_result = DiserializeTransportCatalogue(base);
 	const transport_base_processing::MapRenderer mr_result = DiserializeMapRenderer(base);
-	transport_base_processing::RequestHandler request_handler (db_result, mr_result);
+	const transport_base_processing::TransportGraph db_graph = DiserializeTransportGraph(base);
+	const graph::Router<double> db_router = DiserializeRouter(db_graph.GetGraph(), base);
+	transport_base_processing::RequestHandler request_handler (db_result, mr_result, db_graph, db_router);
 	Print(json_base.GetStatRequest(request_handler), std::cout);
 }

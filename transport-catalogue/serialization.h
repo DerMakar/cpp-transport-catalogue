@@ -8,6 +8,7 @@
 #include "json_reader.h"
 #include "request_handler.h"
 #include "ranges.h"
+#include "graph.h"
 
 #include <fstream>
 #include <filesystem>

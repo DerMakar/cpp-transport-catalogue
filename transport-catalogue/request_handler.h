@@ -15,8 +15,19 @@ namespace transport_base_processing {
 
 
         // MapRenderer понадобится в следующей части итогового проекта
+        
         RequestHandler(const TransportCatalogue& db, const MapRenderer& renderer) : db_(db), renderer_(renderer), db_graf(std::move(TransportGraph(db))){
+            db_router.SetRoutesInternalData(std::move(db_graf.GetRouter().GetInternalData()));
+        }
 
+        RequestHandler(const TransportCatalogue& db
+            , const MapRenderer& renderer
+            , const TransportGraph& graf
+            , const graph::Router<double>& router)
+            : db_(db)
+            , renderer_(renderer)
+            , db_graf(graf)
+            , db_router (router){
         }
 
         // Возвращает информацию о маршруте (запрос Bus)
@@ -44,6 +55,6 @@ namespace transport_base_processing {
         const TransportCatalogue& db_;
         const MapRenderer& renderer_;
         TransportGraph db_graf;
-        graph::Router<double> db_router = db_graf.GetRouter();
+        graph::Router<double> db_router = graph::Router<double>(db_graf.GetGraph(), false);
     };
 } // namespace transport_base_processing

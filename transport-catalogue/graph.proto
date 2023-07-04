@@ -19,11 +19,25 @@ message DirectedWeightedGraph{
 	repeated Edge edges = 2;
 }
 
-message RouteInternalData {
+
+message RouteInternalData_opt {
 	double weight = 1;
-	uint32 prev_edge = 2;
+	PrevEdge prev_edge = 2;
+}
+
+message PrevEdge{
+	uint32 prev_edge = 1;
+}
+
+message RouteInternalData{
+	RouteInternalData_opt route_internal_data_opt = 1;
 }
 
 message Router{
 	repeated RouteInternalData routes_internal_data_ = 1;
 }
+
+
+
+
+

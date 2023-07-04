@@ -10,6 +10,10 @@ namespace transport_base_processing {
 			SetGraf(base);
 		}
 
+		TransportGraph(graph::DirectedWeightedGraph<double>&& graph, std::vector<RouteInfo>&& info) : transport_catalogue_graph(std::move(graph)), edge_info(std::move(info)) {
+
+		}
+
 		graph::Router<double> GetRouter() const;
 
 		const graph::DirectedWeightedGraph<double>& GetGraph() const;
@@ -24,15 +28,7 @@ namespace transport_base_processing {
 		
 	};
 
-	class TransportRouter {
-	public:
-		TransportRouter(const TransportGraph& trasport_graph) : transport_catalogue_router(graph::Router<double>(trasport_graph.GetGraph())){
-			
-		}
-
-    private:
-		graph::Router<double> transport_catalogue_router;
-	};
+	
 
 	
 }

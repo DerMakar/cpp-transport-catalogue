@@ -39,7 +39,7 @@ namespace transport_base_processing {
     }
 
     graph::Router<double> TransportGraph::GetRouter() const {
-        return std::move(graph::Router<double>(transport_catalogue_graph));
+        return std::move(graph::Router<double>(transport_catalogue_graph, true));
     }
 
     const graph::DirectedWeightedGraph<double>& TransportGraph::GetGraph() const {
