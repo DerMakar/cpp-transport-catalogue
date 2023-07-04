@@ -178,9 +178,12 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 	}
 	//
 	// сериализация RoutingSet: int32 bus_wait_time, double bus_velocity
-	const auto& [wait_time, velocity] = request_handler.GetBase().GetWaitVelocityInfo();
+	auto [wait_time, velocity] = request_handler.GetBase().GetWaitVelocityInfo();
 	ser_transport_router->mutable_rouiting_set()->set_bus_wait_time(wait_time);
-	ser_transport_router->mutable_rouiting_set()->set_bus_wait_time(velocity);
+	const int meters_in_km = 1000;
+	const int sec_in_min = 60;
+	velocity = velocity * sec_in_min / meters_in_km;
+	ser_transport_router->mutable_rouiting_set()->set_bus_velocity(velocity);
 }
 
 
@@ -235,6 +238,9 @@ transport_base_processing::TransportCatalogue DiserializeTransportCatalogue(cons
 		}
 		result.AddBus(new_bus);
 	}
+
+	result.SetBusWaitTime(base.transport_router().rouiting_set().bus_wait_time());
+	result.SetBusVelocity(base.transport_router().rouiting_set().bus_velocity());
 	return result;
 }
 
@@ -275,6 +281,6 @@ void ProcessRequest(std::istream& input_json) {
 	}
 	const transport_base_processing::TransportCatalogue db_result = DiserializeTransportCatalogue(base);
 	const transport_base_processing::MapRenderer mr_result = DiserializeMapRenderer(base);
-	transport_base_processing::RequestHandler request_handler (std::move(db_result), std::move(mr_result));
+	transport_base_processing::RequestHandler request_handler (db_result, mr_result);
 	Print(json_base.GetStatRequest(request_handler), std::cout);
 }
