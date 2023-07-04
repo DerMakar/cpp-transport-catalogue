@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package transport_base_serialize;
+
+message Edge {
+	uint32 from = 1;
+	uint32 to = 2;
+	double weight = 3;
+	
+}
+
+message IncidenceList{
+	repeated uint32 incidence_list = 1;
+	
+}
+
+message DirectedWeightedGraph{
+	repeated IncidenceList incidence_lists = 1;
+	repeated Edge edges = 2;
+}
+
+message RouteInternalData {
+	double weight = 1;
+	uint32 prev_edge = 2;
+}
+
+message Router{
+	repeated RouteInternalData routes_internal_data_ = 1;
+}

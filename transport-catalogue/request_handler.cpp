@@ -25,6 +25,10 @@ namespace transport_base_processing {
         return db_graf;
     }
 
+    const graph::Router<double>& RequestHandler::GetRouter() const {
+        return db_router;
+    }
+
     std::optional<graph::Router<double>::RouteInfo> RequestHandler::BuildRoute(std::string_view from, std::string_view to) const {
         size_t vertex_from = db_.FindStop(from)->id;
         size_t vertex_to = db_.FindStop(to)->id;

@@ -321,26 +321,22 @@ Node LoadNull(std::istream& input) {
     throw ParsingError("Failed to read nuul from stream"s);
 }
 
+std::string LoadLiteral(std::istream& input) {
+    std::string s;
+    while (std::isalpha(input.peek())) {
+        s.push_back(static_cast<char>(input.get()));
+    }
+    return s;
+}
+
 Node LoadBool(std::istream& input) {
     using namespace std::literals;
-    std::string text;
-    getline(input, text, ',');
-    auto brackets1_pos = text.find('}');
-    auto brackets2_pos = text.find(']');
-    if(brackets2_pos != std::string::npos) text.erase(brackets2_pos);
-    if (brackets1_pos != std::string::npos) text.erase(brackets1_pos);
-    text = Trim(text);
+    std::string text = LoadLiteral(input);
     if (text == "true"s) {
-        input.putback(',');
-        if (brackets2_pos != std::string::npos) input.putback(']');
-        if (brackets1_pos != std::string::npos) input.putback('}');
         return Node(true);
     }
     else if (text == "false"s) {
-       input.putback(',');
-       if (brackets2_pos != std::string::npos) input.putback(']');
-       if (brackets1_pos != std::string::npos) input.putback('}');
-       return Node(false);
+         return Node(false);
     }
     else {
         throw ParsingError("Failed to read bool from stream"s);

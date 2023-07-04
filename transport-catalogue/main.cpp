@@ -16,13 +16,15 @@ int main(int argc, char* argv[]) {
 
     if (mode == "make_base"sv) {
 
-         MakeBase(std::cin);
+        MakeBase(std::cin);
 
-    } else if (mode == "process_requests"sv) {
+    }
+    else if (mode == "process_requests"sv) {
 
-         ProcessRequest(std::cin);
+        ProcessRequest(std::cin);
 
-    } else {
+    }
+    else {
         PrintUsage();
         return 1;
     }

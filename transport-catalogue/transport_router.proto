@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package transport_base_serialize;
+import "graph.proto";
+
+message RoutingSet {
+	int32 bus_wait_time = 1;
+	double bus_velocity = 2;
+}
+
+message RouteInfo {
+	string bus_name = 1;
+	int32 spans = 2;
+}
+
+message TransportGraph{
+	repeated RouteInfo route_infos = 1;
+	DirectedWeightedGraph graph = 2;
+}
+
+
+message TransportRouter{
+	TransportGraph transport_catalogue_graph = 1;	
+	repeated Router transport_catalogue_router = 2;
+	RoutingSet rouiting_set = 3;
+}
+
+
+
+
+

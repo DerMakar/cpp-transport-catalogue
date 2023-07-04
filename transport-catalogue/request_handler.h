@@ -34,6 +34,8 @@ namespace transport_base_processing {
 
         const TransportGraph& GetTransportGraph() const;
 
+        const graph::Router<double>& GetRouter() const;
+
         // Этот метод будет нужен в следующей части итогового проекта
         svg::Document RenderMap() const;
 

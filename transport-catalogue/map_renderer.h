@@ -34,6 +34,14 @@ namespace transport_base_processing {
         
         MapRenderer() = default;
 
+        MapRenderer(const RenderSettings& renderer_data) {
+            SetRendSet(renderer_data);
+        }
+
+        MapRenderer(RenderSettings&& renderer_data) {
+            SetRendSet(std::move(renderer_data));
+        }
+
         void SetRendSet(const RenderSettings& renderer_data);
 
         std::vector<svg::Polyline> CreateBusLine(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points) const;

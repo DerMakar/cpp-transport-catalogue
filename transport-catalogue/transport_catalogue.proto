@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package transport_base_serialize;
 
+import "map_renderer.proto";
+import "transport_router.proto";
+
 message Stop{
 	 string name = 1;
 	 double lat = 2;
@@ -26,5 +29,8 @@ message TransportCatalogue {
 	repeated Stop stops = 1;
 	repeated Bus buses = 2;
 	repeated Distance stop_to_distance = 3;
+	MapRenderer map_renderer = 4;
+	TransportRouter transport_router = 5;
 }
+	
 
