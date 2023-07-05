@@ -23,11 +23,12 @@ namespace transport_base_processing {
         RequestHandler(const TransportCatalogue& db
             , const MapRenderer& renderer
             , const TransportGraph& graf
-            , const graph::Router<double>& router)
+            , graph::Router<double> router)
             : db_(db)
             , renderer_(renderer)
             , db_graf(graf)
-            , db_router (router){
+            , db_router (std::move(router)){
+            
         }
 
         // Возвращает информацию о маршруте (запрос Bus)

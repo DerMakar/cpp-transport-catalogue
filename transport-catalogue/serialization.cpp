@@ -81,45 +81,27 @@ void LoadColor(const transport_base_serialize::Color& base_color, svg::Color& re
 	}
 }
 
-void SaveRenderSet(const json::JsonBaseProcessing& json_base, transport_base_serialize::TransportCatalogue& file) {
+void SaveRenderSet(const transport_base_processing::RenderSettings& render_setting, transport_base_serialize::TransportCatalogue& file) {
 	auto render_set_ptr = file.mutable_map_renderer()->mutable_renderer_data_();
-	render_set_ptr->set_width(json_base.GetRenderSet().width);
-	render_set_ptr->set_height(json_base.GetRenderSet().height);
-	render_set_ptr->set_padding(json_base.GetRenderSet().padding);
-	render_set_ptr->set_line_width(json_base.GetRenderSet().line_width);
-	render_set_ptr->set_stop_radius(json_base.GetRenderSet().stop_radius);
-	render_set_ptr->set_bus_label_font_size(json_base.GetRenderSet().bus_label_font_size);
-	render_set_ptr->set_bus_label_font_size(json_base.GetRenderSet().bus_label_font_size);
-	render_set_ptr->mutable_bus_label_offset()->set_x(json_base.GetRenderSet().bus_label_offset.x);
-	render_set_ptr->mutable_bus_label_offset()->set_y(json_base.GetRenderSet().bus_label_offset.y);
-	render_set_ptr->set_stop_label_font_size(json_base.GetRenderSet().stop_label_font_size);
-	render_set_ptr->mutable_stop_label_offset()->set_x(json_base.GetRenderSet().stop_label_offset.x);
-	render_set_ptr->mutable_stop_label_offset()->set_y(json_base.GetRenderSet().stop_label_offset.y);
-	SaveColor(render_set_ptr->mutable_underlayer_color(), json_base.GetRenderSet().underlayer_color);
-	render_set_ptr->set_underlayer_width(json_base.GetRenderSet().underlayer_width);
-	for (int i = 0; i < json_base.GetRenderSet().color_palette.size(); ++i) {
-		SaveColor(render_set_ptr->add_color_palette(), json_base.GetRenderSet().color_palette[i]);
+	render_set_ptr->set_width(render_setting.width);
+	render_set_ptr->set_height(render_setting.height);
+	render_set_ptr->set_padding(render_setting.padding);
+	render_set_ptr->set_line_width(render_setting.line_width);
+	render_set_ptr->set_stop_radius(render_setting.stop_radius);
+	render_set_ptr->set_bus_label_font_size(render_setting.bus_label_font_size);
+	render_set_ptr->set_bus_label_font_size(render_setting.bus_label_font_size);
+	render_set_ptr->mutable_bus_label_offset()->set_x(render_setting.bus_label_offset.x);
+	render_set_ptr->mutable_bus_label_offset()->set_y(render_setting.bus_label_offset.y);
+	render_set_ptr->set_stop_label_font_size(render_setting.stop_label_font_size);
+	render_set_ptr->mutable_stop_label_offset()->set_x(render_setting.stop_label_offset.x);
+	render_set_ptr->mutable_stop_label_offset()->set_y(render_setting.stop_label_offset.y);
+	SaveColor(render_set_ptr->mutable_underlayer_color(), render_setting.underlayer_color);
+	render_set_ptr->set_underlayer_width(render_setting.underlayer_width);
+	for (int i = 0; i < render_setting.color_palette.size(); ++i) {
+		SaveColor(render_set_ptr->add_color_palette(), render_setting.color_palette[i]);
 	}
 }
-/*
-TransportRouter transport_router = 5;
- - TransportGraph transport_catalogue_graph = 1;
-	-- repeated RouteInfo route_infos = 1;
-		--- string bus_name = 1;
-		--- int32 spans = 2;
-	-- DirectedWeightedGraph graph = 2;
-		---repeated IncidenceList incidence_lists = 1;
-			----repeated uint32 incidence_list = 1;
-		---repeated Edge edges = 2;
-			----uint32 from = 1;
-			----uint32 to = 2;
-			----double weight = 3;
- - repeated Router transport_catalogue_router = 2;
- - RoutingSet rouiting_set = 3;
-	--int32 bus_wait_time = 1;
-	--double bus_velocity = 2;
 
-*/
 void SaveRouter(const transport_base_processing::RequestHandler& request_handler, transport_base_serialize::TransportCatalogue& file) {
 	// добавление TransportRouter: TransportGraph, repeated Router, RoutingSet - в file
 	transport_base_serialize::TransportRouter* ser_transport_router = file.mutable_transport_router();
@@ -189,19 +171,14 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 }
 
 
-void MakeBase(std::istream& input_json) {
-	transport_base_processing::TransportCatalogue base;
-	json::Document test = json::Load(input_json);
-	json::JsonBaseProcessing json_base(test);
-	json_base.CreateBase(base);
-	const std::filesystem::path path = json_base.GetFileName();
-	std::ofstream out_file(path, std::ios::binary);
-	transport_base_serialize::TransportCatalogue file;
-	SaveBusStop(base, file);
-	SaveRenderSet(json_base, file);
-	transport_base_processing::MapRenderer map_render (json_base.GetRenderSet());
-	transport_base_processing::RequestHandler request_handler(base, map_render);
+void MakeBase(const transport_base_processing::RequestHandler& request_handler,
+			transport_base_serialize::TransportCatalogue& file) {
+	SaveBusStop(request_handler.GetBase(), file);
+	SaveRenderSet(request_handler.GetRenderSet().GetRendSet(), file);
 	SaveRouter(request_handler, file);
+}
+
+void SerializeBase(const transport_base_serialize::TransportCatalogue& file, std::ofstream& out_file) {
 	file.SerializeToOstream(&out_file);
 }
 
@@ -269,7 +246,7 @@ transport_base_processing::MapRenderer DiserializeMapRenderer(const transport_ba
 	return transport_base_processing::MapRenderer(std::move(result));
 }
 
-const transport_base_processing::TransportGraph DiserializeTransportGraph(const transport_base_serialize::TransportCatalogue& base) {
+transport_base_processing::TransportGraph DiserializeTransportGraph(const transport_base_serialize::TransportCatalogue& base) {
 	//выгружаем граф
 	auto& f_graph_ptr = base.transport_router().transport_catalogue_graph().graph();
 	// выгружает вектор ребер
@@ -311,7 +288,7 @@ const transport_base_processing::TransportGraph DiserializeTransportGraph(const 
 }
 
 
-const graph::Router<double> DiserializeRouter(const graph::DirectedWeightedGraph<double>& db_graph, const transport_base_serialize::TransportCatalogue& base) {
+graph::Router<double> DiserializeRouter(const graph::DirectedWeightedGraph<double>& db_graph, const transport_base_serialize::TransportCatalogue& base) {
 	std::vector<std::vector<std::optional<graph::Router<double>::RouteInternalData>>> routes_internal_data_;
 	routes_internal_data_.resize(base.transport_router().transport_catalogue_router_size());
 	for (int i = 0; i < routes_internal_data_.size(); ++i) {
@@ -335,25 +312,4 @@ const graph::Router<double> DiserializeRouter(const graph::DirectedWeightedGraph
 	graph::Router<double> result (db_graph, internal_build_comd);
 	result.SetRoutesInternalData(std::move(routes_internal_data_));
 	return result;
-}
-
-
-
-
-void ProcessRequest(std::istream& input_json) {
-	json::Document test = json::Load(input_json);
-	json::JsonBaseProcessing json_base(test);
-	json_base.ParseSerializationSet();
-	const std::filesystem::path path = json_base.GetFileName();
-	std::ifstream in_file(path, std::ios::binary);
-	transport_base_serialize::TransportCatalogue base;
-	if (!base.ParseFromIstream(&in_file)) {
-		return;
-	}
-	const transport_base_processing::TransportCatalogue db_result = DiserializeTransportCatalogue(base);
-	const transport_base_processing::MapRenderer mr_result = DiserializeMapRenderer(base);
-	const transport_base_processing::TransportGraph db_graph = DiserializeTransportGraph(base);
-	const graph::Router<double> db_router = DiserializeRouter(db_graph.GetGraph(), base);
-	transport_base_processing::RequestHandler request_handler (db_result, mr_result, db_graph, db_router);
-	Print(json_base.GetStatRequest(request_handler), std::cout);
 }
