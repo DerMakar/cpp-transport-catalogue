@@ -11,7 +11,6 @@ namespace transport_base_processing {
 		}
 
 		TransportGraph(graph::DirectedWeightedGraph<double>&& graph, std::vector<RouteInfo>&& info) : transport_catalogue_graph(std::move(graph)), edge_info(std::move(info)) {
-
 		}
 
 		graph::Router<double> GetRouter() const;
@@ -23,12 +22,6 @@ namespace transport_base_processing {
 	private:
 		graph::DirectedWeightedGraph<double> transport_catalogue_graph;
 		std::vector<RouteInfo> edge_info;
-
 		const graph::DirectedWeightedGraph<double>& SetGraf(const TransportCatalogue& base);
-		
 	};
-
-	
-
-	
 }

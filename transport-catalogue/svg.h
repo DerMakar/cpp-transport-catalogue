@@ -72,7 +72,6 @@ namespace svg {
 
     };
 
-
     enum class StrokeLineCap {
         BUTT,
         ROUND,
@@ -86,11 +85,7 @@ namespace svg {
         MITER_CLIP,
         ROUND,
     };
-
-    /*
-     * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.
-     * Хранит ссылку на поток вывода, текущее значение и шаг отступа при выводе элемента
-     */
+        
     struct RenderContext {
         RenderContext(std::ostream& out)
             : out(out) {
@@ -117,11 +112,6 @@ namespace svg {
         int indent = 0;
     };
 
-    /*
-     * Абстрактный базовый класс Object служит для унифицированного хранения
-     * конкретных тегов SVG-документа
-     * Реализует паттерн "Шаблонный метод" для вывода содержимого тега
-     */
     class Object {
     public:
         void Render(const RenderContext& context) const;
@@ -187,8 +177,6 @@ namespace svg {
         }
     private:
         Owner& AsOwner() {
-            // static_cast безопасно преобразует *this к Owner&,
-            // если класс Owner — наследник PathProps
             return static_cast<Owner&>(*this);
         }
 
@@ -210,65 +198,41 @@ namespace svg {
         Point center_;
         double radius_ = 1.0;
     };
-
-    /*
-     * Класс Polyline моделирует элемент <polyline> для отображения ломаных линий
-     * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
-     */
-     /*
-     AddPoint(Point p): добавляет вершину ломаной — элемент свойства points, записываемый в виде x,y и
-     отделяемый пробелами от соседних элементов (см. примеры). Значение свойства по умолчанию — пустая строка.
-     */
+        
     class Polyline final : public Object, public PathProps<Polyline> {
     public:
-        // Добавляет очередную вершину к ломаной линии
-        Polyline& AddPoint(Point point);
+       Polyline& AddPoint(Point point);
 
     private:
         void RenderObject(const RenderContext& context) const override;
         std::deque<Point> polyline_;
     };
 
-    /*
-     * Класс Text моделирует элемент <text> для отображения текста
-     * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/text
-     */
-
     class Text final : public Object, public PathProps<Text> {
     public:
-        // Задаёт координаты опорной точки (атрибуты x и y)
         Text& SetPosition(Point pos);
 
-        // Задаёт смещение относительно опорной точки (атрибуты dx, dy)
         Text& SetOffset(Point offset);
 
-        // Задаёт размеры шрифта (атрибут font-size)
         Text& SetFontSize(uint32_t size);
 
-        // Задаёт название шрифта (атрибут font-family)
         Text& SetFontFamily(std::string font_family);
 
-        // Задаёт толщину шрифта (атрибут font-weight)
         Text& SetFontWeight(std::string font_weight);
 
-        // Задаёт текстовое содержимое объекта (отображается внутри тега text)
         Text& SetData(std::string data);
 
     private:
         void RenderObject(const RenderContext& context) const override;
 
-        Point pos_; // координата опорной точки
-        Point offset_; // смещение относительно опорной точки
-        uint32_t size_ = 1; // свойства font-size — размер шрифта
-        std::string font_weight_; // значение свойства font-weight — толщина шрифта
-        std::string font_family_; // значение свойства font-family — название семейства шрифта
-        std::string data_; // содержимое тега <text> - выводимый текст
-
+        Point pos_; 
+        Point offset_; 
+        uint32_t size_ = 1; 
+        std::string font_weight_;
+        std::string font_family_; 
+        std::string data_; 
     };
 
-
-    // ObjectContainer задаёт интерфейс для доступа к контейнеру SVG-объектов.
-    // Через него Drawable-объекты могут визуализировать себя, добавляя в контейнер SVG - примитивы.
     class ObjectContainer {
     public:
         template <typename T>
@@ -279,10 +243,7 @@ namespace svg {
 
         virtual ~ObjectContainer() = default;
     };
-    /*
-    Интерфейс Drawable унифицирует работу с объектами, которые можно нарисовать, подключив SVG-библиотеку.
-    Для этого в нём есть метод Draw, принимающий ссылку на интерфейс ObjectContainer.
-    */
+    
     class Drawable {
     public:
         virtual void Draw(ObjectContainer& g) const = 0;
@@ -290,10 +251,6 @@ namespace svg {
         virtual ~Drawable() = default;
     };
 
-    /*
-    Класс Document должен реализовывать интерфейс svg::ObjectContainer. Это позволит создать композицию
-    из произвольных Drawable-объектов и создать на их основе SVG-документ
-    */
     class Document : public ObjectContainer {
     public:
         Document() = default;
@@ -305,5 +262,4 @@ namespace svg {
     private:
         std::deque<std::unique_ptr<Object>> objects_;
     };
-
 }  // namespace svg

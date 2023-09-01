@@ -12,7 +12,7 @@ namespace transport_base_processing {
                 bool IsFirst = true;
                 size_t from = (*cur_stop)->id;
                 int span_counter = 0;
-                for (auto it = cur_stop + 1; it < bus.route.end(); ++it) { // пока есть лишняя итерация на создание для трех-остановочного круга ОжСтоп0 + путь1 + путь2 + путь3 - ребро из начала в начало по всему кругу
+                for (auto it = cur_stop + 1; it < bus.route.end(); ++it) {
                     size_t to = (*it)->id;
                     double distance = 0.0;
                     if (base.GetDistanceCollection().count(std::make_pair(*(prev(it)), *it)) != 0) {
@@ -49,5 +49,4 @@ namespace transport_base_processing {
     const std::vector<RouteInfo>& TransportGraph::GetEdgeInfo() const {
         return edge_info;
     }
-
 } //namespace transport_base_processing

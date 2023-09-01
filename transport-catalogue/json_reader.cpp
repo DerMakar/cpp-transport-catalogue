@@ -7,35 +7,24 @@ namespace json {
 
     void JsonBaseProcessing::CreateBase(transport_base_processing::TransportCatalogue& base) {
         const Dict* data = &document_.GetRoot().AsMap();
-        
         const Dict* render_settings = &(*data).at("render_settings"s).AsMap();
         ParseRenderSettings(render_settings);
-
         const Dict* routing_settings = &(*data).at("routing_settings"s).AsMap();
         ParseRoutingSettings(routing_settings, base);
-        
         const Array* base_request = &(*data).at("base_requests"s).AsArray();
         std::vector<Stop> stops_to_add = std::move(ParseStopRequests(base_request));
-        
-
         for (Stop& stop : stops_to_add) {
             base.AddStop(stop);
         }
-
         for (Stop& stop : stops_to_add) {
            base.AddDistance(std::move(ParseStopDistInfo(stop.name)));
         }
-       
         std::vector<Bus> bases_to_add = std::move(ParseBusRequests(base_request, base));
-                
-       
         for (Bus& bus : bases_to_add) {
            base.AddBus(std::move(bus));
         }
-
         const Dict* serialization_settings = &(*data).at("serialization_settings"s).AsMap();
         filename = (*serialization_settings).at("file"s).AsString();
-        
     }
 
     void JsonBaseProcessing::ParseSerializationSet() {
@@ -68,12 +57,9 @@ namespace json {
                             for (const auto bus : *set_of_buses) {
                                 document.Value(bus);
                             }
-                            
-
                         }
                         document.EndArray();
                     }
-                    
                 }
                 else if (req_type == "Bus"sv) {
                     std::optional<transport_base_processing::BusInfo> bus_info = handler.GetBase().GetBusInfo((*request_ptr).at("name"s).AsString());
@@ -85,15 +71,12 @@ namespace json {
                         .Key("route_length"s).Value(double(bus_info.value().route_length))
                         .Key("stop_count"s).Value(bus_info.value().stops_on_route)
                         .Key("unique_stop_count"s).Value(bus_info.value().unique_stops);
-
                     }
-                    
                 }
                 else if (req_type == "Map"sv) {
                     std::stringstream strm;
                     handler.RenderMap().Render(strm);
                     document.Key("map"s).Value(strm.str());
-                    
                 }
                 else if (req_type == "Route") {
                     std::string_view from = (*request_ptr).at("from"s).AsString();
@@ -187,7 +170,7 @@ namespace json {
     }
     
     StopDistancesInfo JsonBaseProcessing::ParseStopDistInfo(std::string& stop) {
-        StopDistancesInfo result; // std::vector<std::pair<long unsigned int, std::string>>
+        StopDistancesInfo result; 
         if (stop_to_stop_distances.count(stop) == 0) {
             return {};
         }
@@ -253,6 +236,4 @@ namespace json {
     std::string_view JsonBaseProcessing::GetFileName() const {
         return filename;
     }
-
-   
 }// namespace json

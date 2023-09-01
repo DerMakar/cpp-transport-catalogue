@@ -1,12 +1,11 @@
 #include "transport_catalogue.h"
+#include "geo.h"
 
 #include <stdexcept>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-
-#include "geo.h"
 
 using namespace std::literals;
 
@@ -15,7 +14,6 @@ namespace transport_base_processing {
     void TransportCatalogue::AddStop(Stop stop) {
         stops.push_back(std::move(stop));
         stopname_to_stop[std::string_view(stops.back().name)] = &stops.back();
-
     }
 
     void TransportCatalogue::AddDistance(const StopDistancesInfo& info) {
@@ -47,7 +45,6 @@ namespace transport_base_processing {
                 coordinates_collection.push_back(stop->coordinates);
             }
             stopname_to_bus[stop->name].insert(bus.name);
-            
         }
     }
 
@@ -89,7 +86,6 @@ namespace transport_base_processing {
         Stop* start_of_dist = stopname_to_stop.at(stop);
         for (const auto& stop_in_coll : stopname_to_stop) {
             Stop* end_of_dist = stop_in_coll.second;
-
             if (stops_to_distance.count({ start_of_dist, end_of_dist }) != 0) {
                 continue;
             }
@@ -99,7 +95,6 @@ namespace transport_base_processing {
             }
             stops_to_distance[{ end_of_dist, start_of_dist}] = geo::ComputeDistance({ end_of_dist->coordinates.lat ,end_of_dist->coordinates.lng }, { start_of_dist->coordinates.lat , start_of_dist->coordinates.lng });
         }
-
     }
 
     std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view busname) const {
@@ -126,7 +121,6 @@ namespace transport_base_processing {
                 ++bus_info.unique_stops;
                 tmp.push_back(std::move(right));
             }
-
         }
         bus_info.curvature = bus_info.route_length / bus_info.curvature;
         return bus_info;
@@ -142,6 +136,7 @@ namespace transport_base_processing {
     void TransportCatalogue::SetBusWaitTime(unsigned short int time) {
         bus_wait_time = time;
     }
+
     void TransportCatalogue::SetBusVelocity(double speed) {
         const int meters_in_km = 1000;
         const int sec_in_min = 60;
@@ -158,6 +153,5 @@ namespace transport_base_processing {
         out << std::setprecision(9) << double(info.route_length) << " route length, "s;
         out << std::setprecision(9) << info.curvature << " curvature"s;
         return out;
-
     }
 }

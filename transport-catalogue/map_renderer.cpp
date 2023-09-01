@@ -42,7 +42,9 @@ namespace transport_base_processing {
         return result;
     }
 
-    std::vector<svg::Text> MapRenderer::CreateRouteNames(const std::map<std::string_view, std::vector<svg::Point>>& bus_route_points, const transport_base_processing::TransportCatalogue& db) const {
+    std::vector<svg::Text> MapRenderer::CreateRouteNames(const std::map<std::string_view
+        , std::vector<svg::Point>>& bus_route_points
+        , const transport_base_processing::TransportCatalogue& db) const {
         using namespace std::literals;
         using namespace svg;
         std::vector<Text> result;
@@ -76,7 +78,6 @@ namespace transport_base_processing {
                 ++color_index;
                 if (color_index > max_color_id) color_index = 0;
             }
-           
         }
         return result;
     }
@@ -118,15 +119,12 @@ namespace transport_base_processing {
         }
         return result;
     }
-    
-
 }// namespace transport_base_processing
 
 inline const double EPSILON = 1e-6;
 bool IsZero(double value) {
     return std::abs(value) < EPSILON;
 }
-
 
 svg::Point SphereProjector::operator()(geo::Coordinates coords) const {
     return {

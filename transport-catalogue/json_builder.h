@@ -16,9 +16,7 @@ namespace json {
         class BaseContex {
 
         public:
-
             BaseContex(Builder& builder) : builder_(builder) {
-
             }
             Builder& GetBase();
             DictItemContext StartDict();
@@ -36,11 +34,9 @@ namespace json {
         class DictItemContext : public BaseContex {
         public:
             DictItemContext(BaseContex base) : BaseContex(base), builder(base.GetBase()) {
-
             }
 
             DictItemContext(Builder& builder_main) : BaseContex(builder_main), builder(builder_main) {
-
             }
             ValueItemContextAfterKey Key(std::string key);
             BaseContex EndDict();
@@ -51,18 +47,13 @@ namespace json {
             Node Build() = delete;
         private:
             Builder& builder;
-
         };
 
         class ValueItemContextAfterKey : public BaseContex {
         public:
-
             ValueItemContextAfterKey(Builder& builder_main) : BaseContex(builder_main), builder(builder_main) {
-
             }
-            DictItemContext Value(Node::Value value); // вернет к возможности добавить ключ или закрыть словарь
-            // может от родителя запустить Dict
-            // может от родителя запустить Array
+            DictItemContext Value(Node::Value value); 
             BaseContex EndDict() = delete;
             BaseContex EndArray() = delete;
             Node Build() = delete;
@@ -70,59 +61,39 @@ namespace json {
         
         private:
             Builder& builder;
-
         };
         
         class ArrayItemContext : public BaseContex {
         public:
             ArrayItemContext(BaseContex base) : BaseContex(base), builder(base.GetBase()) {
-
             }
 
             ArrayItemContext(Builder& builder_main) : BaseContex(builder_main), builder(builder_main) {
-
             }
 
-            BaseContex EndArray(); // закроет массив и вернет к BC
-            ArrayItemContext Value(Node::Value value); // позволит положить Value в массив
-            // может от родителя запустить Dict
-            // может от родителя запусть Array
+            BaseContex EndArray(); 
+            ArrayItemContext Value(Node::Value value); 
             ValueItemContextAfterKey Key(std::string key) = delete;
-            BaseContex EndDict() = delete; // не может закрывать словари
+            BaseContex EndDict() = delete; 
             Node Build() = delete;
         private:
             Builder& builder;
-
         };
         
         public:
             Node Build();
-
             BaseContex EndDict();
-
             BaseContex EndArray();
-
             BaseContex Value(Node::Value value);
-
             DictItemContext StartDict();
-
             ValueItemContextAfterKey Key(std::string key);
-
             ArrayItemContext StartArray();
 
     private:
-        // храним текущее описываемое значение и цепочка его родителей.
-        // Он поможет возвращаться в нужный контекст после вызова End - методов.
-        
-
         Node root_;
-        std::vector<Node*> nodes_stack; // При реализации обратите внимание на метод emplace_back у вектора: 
-        bool end_of_object = false;                 //в отличие от push_back он принимает не сам добавляемый объект, а аргументы конструктора этого объекта
+        std::vector<Node*> nodes_stack; 
+        bool end_of_object = false;              
         std::optional<std::string> key_;
-
         Node Start(const Node& node);
     };
-
-    
-    
 } // namespace json

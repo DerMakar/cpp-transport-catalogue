@@ -103,15 +103,13 @@ void SaveRenderSet(const transport_base_processing::RenderSettings& render_setti
 }
 
 void SaveRouter(const transport_base_processing::RequestHandler& request_handler, transport_base_serialize::TransportCatalogue& file) {
-	// добавление TransportRouter: TransportGraph, repeated Router, RoutingSet - в file
 	transport_base_serialize::TransportRouter* ser_transport_router = file.mutable_transport_router();
-	//
-	// ссериализация TransportGraph: граф, вектор пересадок
+	
 	transport_base_serialize::TransportGraph* ser_transport_graf = ser_transport_router->mutable_transport_catalogue_graph();
 	const transport_base_processing::TransportGraph& db_graf = request_handler.GetTransportGraph();
-	// сериализация графа: вектор ребер, вектор вершин
+	
 	transport_base_serialize::DirectedWeightedGraph* ser_graf = ser_transport_graf->mutable_graph();
-	// сериализация вектора вершин
+	
 	transport_base_serialize::IncidenceList incidence_lists;
 	size_t db_graph_size = db_graf.GetGraph().GetVertexCount();
 	for (size_t i = 0; i < db_graph_size; ++i) {
@@ -123,7 +121,7 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 		}
 		*ser_graf->add_incidence_lists() = ser_incidence_list;
 	}
-	// сериализация вектора ребер
+	
 	size_t db_edges_cout = db_graf.GetGraph().GetEdgeCount();
 	for (size_t i = 0; i < db_edges_cout; ++i) {
 		const graph::Edge db_edge = db_graf.GetGraph().GetEdge(i);
@@ -134,7 +132,7 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 		*ser_graf->add_edges() = ser_edge;
 	}
 	
-	// сериализация вектора пересадок
+	
 	size_t rout_info_size = db_graf.GetEdgeInfo().size();
 	for (int i = 0; i < rout_info_size; ++i) {
 		transport_base_serialize::RouteInfo ser_edge_info;
@@ -142,8 +140,7 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 		ser_edge_info.set_spans(db_graf.GetEdgeInfo()[i].spans);
 		*ser_transport_graf->add_route_infos() = ser_edge_info;
 	}
-	//
-	//сериализация repeated Router: repeated RouteInternalData routes_internal_data_ 
+	
 	size_t db_internal_data_size = db_graf.GetGraph().GetVertexCount();
 	for (size_t i = 0; i < db_internal_data_size; ++i) {
 		transport_base_serialize::Router* router = ser_transport_router->add_transport_catalogue_router();
@@ -160,8 +157,6 @@ void SaveRouter(const transport_base_processing::RequestHandler& request_handler
 		}
 	}
 	
-	//
-	// сериализация RoutingSet: int32 bus_wait_time, double bus_velocity
 	auto [wait_time, velocity] = request_handler.GetBase().GetWaitVelocityInfo();
 	ser_transport_router->mutable_rouiting_set()->set_bus_wait_time(wait_time);
 	const int meters_in_km = 1000;
@@ -247,9 +242,9 @@ transport_base_processing::MapRenderer DiserializeMapRenderer(const transport_ba
 }
 
 transport_base_processing::TransportGraph DiserializeTransportGraph(const transport_base_serialize::TransportCatalogue& base) {
-	//выгружаем граф
+	
 	auto& f_graph_ptr = base.transport_router().transport_catalogue_graph().graph();
-	// выгружает вектор ребер
+	
 	std::vector<graph::Edge<double>> edges;
 	edges.resize(f_graph_ptr.edges_size());
 	for (size_t i = 0; i < edges.size(); ++i) {
@@ -259,7 +254,7 @@ transport_base_processing::TransportGraph DiserializeTransportGraph(const transp
 		edge.weight = f_graph_ptr.edges(i).weight();
 		edges[i] = std::move(edge);
 	}
-	// выгружаем вектор вершин
+	
 	std::vector<std::vector<size_t>> incidence_lists;
 	incidence_lists.resize (f_graph_ptr.incidence_lists_size());
 	for (int i = 0; i < incidence_lists.size(); ++i) {
@@ -271,7 +266,7 @@ transport_base_processing::TransportGraph DiserializeTransportGraph(const transp
 	}
 	graph::DirectedWeightedGraph<double> result_graph(std::move(edges), std::move(incidence_lists));
 
-	// выгружаем информацию по маршрутам
+	
 	std::vector<transport_base_processing::RouteInfo> edge_info;
 	auto& f_rout_info_ptr = base.transport_router().transport_catalogue_graph();
 	edge_info.resize(f_rout_info_ptr.route_infos_size());
@@ -286,7 +281,6 @@ transport_base_processing::TransportGraph DiserializeTransportGraph(const transp
 
 	return result;
 }
-
 
 graph::Router<double> DiserializeRouter(const graph::DirectedWeightedGraph<double>& db_graph, const transport_base_serialize::TransportCatalogue& base) {
 	std::vector<std::vector<std::optional<graph::Router<double>::RouteInternalData>>> routes_internal_data_;

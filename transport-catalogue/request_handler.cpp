@@ -1,6 +1,5 @@
 #include "request_handler.h"
 
-
 namespace transport_base_processing {
     using namespace std::literals;
     const transport_base_processing::TransportCatalogue& RequestHandler::GetBase() const {
@@ -11,12 +10,10 @@ namespace transport_base_processing {
         return renderer_;
     }
 
-    // Возвращает информацию о маршруте (запрос Bus)
     std::optional<transport_base_processing::BusInfo> RequestHandler::GetBusStat(const std::string_view& bus_name) const {
         return db_.GetBusInfo(bus_name);
     }
 
-    // Возвращает маршруты, проходящие через
     const std::set<std::string>* RequestHandler::GetBusesByStop(const std::string_view& stop_name) const {
         return db_.GetStopInfo(stop_name);
     }
@@ -44,7 +41,7 @@ namespace transport_base_processing {
         using transport_base_processing::Bus;
         using transport_base_processing::Stop;
         svg::Document result;
-        std::vector<svg::Text> stop_names;// private: std::deque<std::unique_ptr<Object>> objects_;
+        std::vector<svg::Text> stop_names;
         SphereProjector point_corrector(db_.GetCoordCollect().begin(), db_.GetCoordCollect().end(), renderer_.GetRendSet().width, renderer_.GetRendSet().height, renderer_.GetRendSet().padding);
         std::deque<Bus> all_buses = db_.GetBuses();
         stop_names.reserve(all_buses.size() * 2);
@@ -61,9 +58,7 @@ namespace transport_base_processing {
                     route_coords[bus.name].push_back(point_corrector(stop->coordinates));
                     stops_on_routes[stop->name] = point_corrector(stop->coordinates);
                 }
-
             }
-
         }
         for (auto& polyline : renderer_.CreateBusLine(route_coords)) {
             result.Add(std::move(polyline));
@@ -77,9 +72,6 @@ namespace transport_base_processing {
         for (auto& name : renderer_.CreateStopsNames(stops_on_routes)) {
             result.Add(std::move(name));
         }
-
-
         return result;
-
     }
 } // namespace transport_base_processing 

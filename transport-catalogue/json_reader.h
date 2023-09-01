@@ -4,13 +4,13 @@
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "json_builder.h"
+
 #include <sstream>
-
-
 
 namespace json {
 	using StopDistancesInfo = transport_base_processing::TransportCatalogue::StopDistancesInfo;
 	using JsonStopDistanceMap = std::unordered_map<std::string, std::unordered_map<std::string, long unsigned int>>;
+	
 	class JsonBaseProcessing {
 		public:
 		JsonBaseProcessing(Document document) : document_(std::move(document)) {
@@ -37,6 +37,5 @@ namespace json {
 		std::vector< transport_base_processing::Bus> ParseBusRequests(const Array* data, transport_base_processing::TransportCatalogue& base);
 		void ParseRoutingSettings(const Dict* data, transport_base_processing::TransportCatalogue& base);
 		StopDistancesInfo ParseStopDistInfo(std::string& stop);
-		
 	};
 }

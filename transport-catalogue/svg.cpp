@@ -37,8 +37,6 @@ namespace svg {
         }
     }
 
-     
-
     void ColorDetection::operator()(std::monostate) const {
         out << "none";
     }
@@ -52,7 +50,6 @@ namespace svg {
             << ","s << color.green
             << ","s << color.blue
             << ")"s;
-
     }
 
     void ColorDetection::operator()(Rgba color) const {
@@ -65,10 +62,7 @@ namespace svg {
 
     void Object::Render(const RenderContext& context) const {
         context.RenderIndent();
-
-        // Делегируем вывод тега своим подклассам
         RenderObject(context);
-
         context.out << std::endl;
     }
 
@@ -165,16 +159,13 @@ namespace svg {
         return *this;
     }
 
-
     Text& Text::SetData(std::string data) {
         data_ = data;
         return *this;
     }
 
-
     void Text::RenderObject(const RenderContext& context) const {
         auto& out = context.out;
-        
         out << "<text "sv;
         RenderAttrs(context.out);
         out <<" x=\""s << pos_.x << "\" y=\""sv << pos_.y << "\" dx=\""sv;
@@ -185,7 +176,6 @@ namespace svg {
         if (!font_weight_.empty()) {
             out << " font-weight=\""sv << font_weight_ << "\""sv;
         }
-        
         out << ">"sv;
         if (!data_.empty()) {
             out << data_;
@@ -193,12 +183,10 @@ namespace svg {
         out << "</text>"sv;
     }
 
-
     // ---------- Document ------------------
     void Document::AddPtr(std::unique_ptr<Object>&& obj) {
         objects_.emplace_back(move(obj));
     }
-
 
     void Document::Render(std::ostream& out) const {
         auto svg = RenderContext(out, 2, 2);
